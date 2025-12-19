@@ -1,0 +1,629 @@
+/* ============================================
+   THREAT INTELLIGENCE GLOBE - 3D Visualization
+   ============================================ */
+
+/* Main container */
+.threat-intel-container {
+  display: flex;
+  gap: 0;
+  height: calc(100vh - 200px);
+  min-height: 600px;
+  max-width: 100%;
+  background: var(--bg-panel);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Globe canvas area */
+.globe-canvas-wrapper {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  overflow: hidden;
+}
+
+#threat-globe-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+#threat-globe-canvas:active {
+  cursor: grabbing;
+}
+
+/* Globe loading state */
+.globe-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-secondary);
+  z-index: 10;
+}
+
+.globe-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(236, 72, 153, 0.2);
+  border-top-color: var(--accent-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Globe controls overlay */
+.globe-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.globe-control-btn {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  font-family: var(--font-body);
+}
+
+.globe-control-btn:hover {
+  background: rgba(236, 72, 153, 0.2);
+  border-color: var(--accent-pink);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.globe-control-btn.active {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  border-color: transparent;
+  color: white;
+}
+
+/* Time filter buttons */
+.globe-time-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.time-filter-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.time-filter-btn:hover {
+  border-color: var(--accent-pink);
+  color: var(--text-primary);
+}
+
+.time-filter-btn.active {
+  background: var(--accent-pink);
+  border-color: var(--accent-pink);
+  color: white;
+}
+
+/* Globe stats overlay */
+.globe-stats-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.globe-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.globe-stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.globe-stat-label {
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+.globe-stat-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.globe-stat-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.globe-stat-badge.high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.globe-stat-badge.medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.globe-stat-badge.low {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Intelligence panel (right sidebar) */
+.intel-panel {
+  width: 400px;
+  background: rgba(15, 23, 42, 0.98);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.intel-panel-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1));
+}
+
+.intel-panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  font-family: var(--font-heading);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intel-panel-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.intel-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Custom scrollbar for intel panel */
+.intel-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.intel-panel-content::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.intel-panel-content::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.3);
+  border-radius: 3px;
+}
+
+.intel-panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.5);
+}
+
+/* Empty state */
+.intel-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.intel-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.intel-empty-text {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Threat detail card */
+.threat-detail-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.threat-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.threat-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.threat-brand-icon {
+  font-size: 24px;
+}
+
+.threat-risk-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.threat-risk-badge.high {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.threat-risk-badge.medium {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.threat-risk-badge.low {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.threat-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  word-break: break-all;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-teal);
+  margin-bottom: 12px;
+}
+
+.threat-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.threat-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+/* Intel sections */
+.intel-section {
+  margin-bottom: 24px;
+}
+
+.intel-section:last-child {
+  margin-bottom: 0;
+}
+
+.intel-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.intel-section-icon {
+  font-size: 16px;
+}
+
+.intel-item {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(236, 72, 153, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.intel-item:hover {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.intel-item:last-child {
+  margin-bottom: 0;
+}
+
+.intel-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.intel-item-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.intel-item-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.intel-item-status.detected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.intel-item-status.clean {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.intel-item-status.unknown {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.intel-item-value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* MITRE ATT&CK techniques */
+.mitre-technique {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.mitre-technique:last-child {
+  margin-bottom: 0;
+}
+
+.mitre-technique-id {
+  font-family: var(--font-mono);
+  color: var(--accent-purple);
+  font-weight: 700;
+}
+
+.mitre-technique-name {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* Action buttons */
+.intel-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.intel-action-btn {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.intel-action-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(236, 72, 153, 0.2);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.intel-action-btn.primary {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  border: none;
+  color: white;
+}
+
+.intel-action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+}
+
+.intel-action-btn.secondary {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.intel-action-btn.secondary:hover {
+  background: rgba(236, 72, 153, 0.2);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+}
+
+/* Loading state for intel panel */
+.intel-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.intel-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(236, 72, 153, 0.2);
+  border-top-color: var(--accent-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+/* Mobile/tablet fallback */
+@media (max-width: 1024px) {
+  .threat-intel-container {
+    display: none;
+  }
+  
+  /* Show table view on mobile */
+  .threat-intel-mobile-fallback {
+    display: block;
+  }
+}
+
+@media (min-width: 1025px) {
+  .threat-intel-mobile-fallback {
+    display: none;
+  }
+}
+
+/* Responsive intel panel */
+@media (max-width: 1400px) {
+  .intel-panel {
+    width: 350px;
+  }
+}
+
+/* Tooltip for globe hover */
+.globe-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(236, 72, 153, 0.5);
+  border-radius: 8px;
+  padding: 12px 16px;
+  pointer-events: none;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.globe-tooltip.visible {
+  opacity: 1;
+}
+
+.globe-tooltip-brand {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globe-tooltip-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Glow effects for cyber aesthetic */
+.cyber-glow {
+  filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.6));
+}
+
+.cyber-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.8));
+  }
+}

@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PhishTrap – Dashboard</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}?v=45">
+  <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}?v=36">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}?v=36">
+  <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}?v=48">
+  <link rel="stylesheet" href="{{ url_for('static', filename='threat-intel-globe.css') }}?v=36">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="bg">
+  <div class="dashboard-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar collapsed" id="sidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="sidebar-logo" onclick="toggleSidebar()" title="Toggle sidebar">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo">
+        </div>
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-name">PhishTrap</div>
+          <div class="sidebar-brand-subtitle">AI Sandbox</div>
+        </div>
+      </div>
+
+      <!-- Navigation Items -->
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-tooltip="Overview" onclick="switchTab('overview'); return false;">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Overview</span>
+          {% if pending_reviews|length > 0 %}
+          <span class="nav-badge">{{ pending_reviews|length }}</span>
+          {% endif %}
+        </a>
+        <a href="#" class="nav-item" data-tooltip="Emails" onclick="switchTab('emails'); return false;">
+          <span class="nav-icon">📧</span>
+          <span class="nav-label">Emails</span>
+          <span class="nav-badge">{{ total_emails }}</span>
+        </a>
+        <a href="#" class="nav-item" data-tooltip="Threat Intelligence" onclick="switchTab('threat-intel'); return false;">
+          <span class="nav-icon">🧠</span>
+          <span class="nav-label">Threat Intel</span>
+          <span class="nav-badge">{{ total_links }}</span>
+        </a>
+        <a href="#" class="nav-item" data-tooltip="Blocklist" onclick="switchTab('blocklist'); return false;">
+          <span class="nav-icon">🚫</span>
+          <span class="nav-label">Blocklist</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">{{ admin_email[0]|upper }}</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ admin_email }}</div>
+            <div class="sidebar-user-role">Administrator</div>
+          </div>
+          <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Logout">⎋</a>
+        </div>
+      </div>
+
+      <!-- Collapse Toggle -->
+      <div class="sidebar-toggle" onclick="toggleSidebar()"></div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar (simplified) -->
+      <div class="main-topbar">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+          <span style="font-size: 20px;">☰</span>
+        </button>
+        <h1 class="main-topbar-title">Dashboard</h1>
+        <div class="main-topbar-actions">
+        </div>
+      </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash" style="margin: 20px 24px;">
+          {% for cat,msg in messages %}
+            <div class="flash-item {{cat}}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Tab Content: Overview -->
+    <div id="overview-tab" class="tab-content active" style="padding: 24px;">
+    <section class="cards" style="margin-bottom: 16px;">
+      <div class="card">
+        <div class="card-title">Total Emails</div>
+        <div class="kpi">{{ total_emails }}</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Links Observed</div>
+        <div class="kpi">{{ total_links }}</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Replied</div>
+        <div class="kpi">{{ total_replied }}</div>
+      </div>
+
+      <a href="{{ url_for('manage_users') }}" class="card card-clickable">
+        <div class="card-title">Connected Users</div>
+        <div class="kpi">{{ connected_users }}</div>
+      </a>
+    </section>
+
+    <!-- Pending Reviews Section -->
+    <section class="panel collapsible-section" style="margin-bottom: 24px;">
+        <div class="section-header">
+          <h2>⚠️ Pending Admin Review ({{ pending_reviews|length }})</h2>
+          {% if pending_reviews|length > 3 %}
+          <button class="toggle-btn" onclick="toggleSection('pending')">Show All</button>
+          {% endif %}
+        </div>
+        <p class="muted" style="margin-top: -8px; margin-bottom: 16px;">AI uncertain - requires your decision</p>
+        
+        {% if pending_reviews %}
+        
+        <!-- Show first 3 pending reviews -->
+        <div class="compact-list">
+          {% for email in pending_reviews[:3] %}
+          <div class="email-card review-card">
+            <div class="email-card-header">
+              <div class="email-subject">⚠️ {{ email.subject }}</div>
+              <div class="email-badge-group">
+                <span class="badge uncertain">{{ email.ai_score }}%</span>
+              </div>
+            </div>
+            <div class="email-meta">
+              <div class="email-meta-item">📤 {{ email.sender }}</div>
+              <div class="email-meta-item">🕐 {{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
+            </div>
+            <div class="email-actions">
+              <form method="post" action="{{ url_for('approve_reply', email_id=email.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-success">Mark as Phishing</button>
+              </form>
+              <form method="post" action="{{ url_for('mark_as_legit', email_id=email.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-primary"> Mark as Legit</button>
+              </form>
+              <form method="post" action="{{ url_for('blocklist_from_review', email_id=email.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger">Block Sender</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Collapsible content for remaining reviews -->
+        <div id="pending-content" class="collapsible-content">
+          <div class="compact-list">
+            {% for email in pending_reviews[3:] %}
+            <div class="email-card review-card">
+              <div class="email-card-header">
+                <div class="email-subject">⚠️ {{ email.subject }}</div>
+                <div class="email-badge-group">
+                  <span class="badge uncertain">{{ email.ai_score }}%</span>
+                </div>
+              </div>
+              <div class="email-meta">
+                <div class="email-meta-item">📤 {{ email.sender }}</div>
+                <div class="email-meta-item">🕐 {{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
+              </div>
+              <div class="email-actions">
+                <form method="post" action="{{ url_for('approve_reply', email_id=email.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-success">🤖 Let AI Reply</button>
+                </form>
+                <form method="post" action="{{ url_for('mark_as_legit', email_id=email.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-primary">✅ Mark as Legit</button>
+                </form>
+                <form method="post" action="{{ url_for('blocklist_from_review', email_id=email.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-danger">🚫 Block Sender</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <p class="muted">No pending reviews. All emails have been processed automatically.</p>
+        {% endif %}
+      </section>
+
+    <!-- Recent Emails Section -->
+    <section class="panel" id="emails-section" style="margin-bottom: 24px;">
+      <div class="section-header">
+        <h2>📧 Recent Emails ({{ total_emails }} total)</h2>
+      </div>
+      
+      <!-- Email cards -->
+      <div class="compact-list">
+        {% for e in emails %}
+        <div class="email-card">
+          <div class="email-card-header">
+            <div class="email-subject">{{ e.subject }}</div>
+            <div class="email-badge-group">
+              {% if e.admin_decision == 'mark_legit' %}
+                <span class="badge ok">LEGIT</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN OVERRIDE</span>
+              {% elif e.review_status == 'admin_approved' or e.admin_decision == 'approve_reply' %}
+                <span class="badge err">PHISHING</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN APPROVED</span>
+              {% elif e.ai_label == 'phishing' %}
+                <span class="badge err">PHISHING</span>
+                <span class="badge err">{{ e.ai_score }}%</span>
+              {% elif e.ai_label == 'suspicious' %}
+                <span class="badge warn">SUSPICIOUS</span>
+                <span class="badge warn">{{ e.ai_score }}%</span>
+              {% elif e.ai_label == 'legit' %}
+                <span class="badge ok">LEGIT</span>
+                <span class="badge ok">{{ e.ai_score }}%</span>
+              {% else %}
+                <span class="badge">{{ e.ai_score }}%</span>
+              {% endif %}
+              {% if e.replied %}
+                <span class="badge replied">✓ Replied</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="email-meta">
+            <div class="email-meta-item">📤 {{ e.sender }}</div>
+            <div class="email-meta-item">🕐 {{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else 'N/A' }}</div>
+          </div>
+        </div>
+        {% else %}
+        <p class="muted">No emails yet.</p>
+        {% endfor %}
+      </div>
+      
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="pagination">
+        {% if page > 1 %}
+          <a href="{{ url_for('dashboard', page=1) }}" class="pagination-btn">« First</a>
+          <a href="{{ url_for('dashboard', page=page-1) }}" class="pagination-btn">‹ Prev</a>
+        {% else %}
+          <span class="pagination-btn disabled">« First</span>
+          <span class="pagination-btn disabled">‹ Prev</span>
+        {% endif %}
+        
+        <span class="pagination-info">Page {{ page }} of {{ total_pages }}</span>
+        
+        {% if page < total_pages %}
+          <a href="{{ url_for('dashboard', page=page+1) }}" class="pagination-btn">Next ›</a>
+          <a href="{{ url_for('dashboard', page=total_pages) }}" class="pagination-btn">Last »</a>
+        {% else %}
+          <span class="pagination-btn disabled">Next ›</span>
+          <span class="pagination-btn disabled">Last »</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+    </div>
+    <!-- End Overview Tab -->
+
+    <!-- Tab Content: Emails -->
+    <div id="emails-tab" class="tab-content" style="padding: 24px;">
+    <section class="panel" id="emails-section">
+      <div class="section-header">
+        <h2>📧 Recent Emails (<span id="emails-count">{{ total_emails }}</span> total)</h2>
+        <div class="time-filters">
+          <button class="time-filter-btn active" data-filter="24h" data-target="emails">24H</button>
+          <button class="time-filter-btn" data-filter="7d" data-target="emails">7D</button>
+          <button class="time-filter-btn" data-filter="30d" data-target="emails">30D</button>
+          <button class="time-filter-btn" data-filter="all" data-target="emails">All</button>
+        </div>
+      </div>
+      
+      <!-- Email cards -->
+      <div class="compact-list">
+        {% for e in emails %}
+        <div class="email-card">
+          <div class="email-card-header">
+            <div class="email-subject">📧 {{ e.subject or '(no subject)' }}</div>
+            <div class="email-badge-group">
+              {% if e.admin_decision == 'mark_legit' %}
+                <span class="badge ok">LEGIT</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN OVERRIDE</span>
+              {% elif e.review_status == 'admin_approved' or e.admin_decision == 'approve_reply' %}
+                <span class="badge err">PHISHING</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN APPROVED</span>
+              {% elif e.ai_label == 'phishing' %}
+                <span class="badge err">PHISHING</span>
+                <span class="badge err">{{ e.ai_score }}%</span>
+              {% elif e.ai_label == 'suspicious' %}
+                <span class="badge warn">SUSPICIOUS</span>
+                <span class="badge warn">{{ e.ai_score }}%</span>
+              {% elif e.ai_label == 'legit' %}
+                <span class="badge ok">LEGIT</span>
+                <span class="badge ok">{{ e.ai_score }}%</span>
+              {% else %}
+                <span class="badge">{{ e.ai_score }}%</span>
+              {% endif %}
+              {% if e.blocked %}
+              <span class="badge" style="background: #95a5a6;">🚫 Blocked</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="email-meta">
+            <div class="email-meta-item">👤 {{ e.sender }}</div>
+            <div class="email-meta-item">🕐 {{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else '' }}</div>
+            {% if e.replied %}
+            <div class="email-meta-item">✅ Replied</div>
+            {% endif %}
+          </div>
+          <div class="email-actions">
+            {% if e.ai_label != 'legit' %}
+            <a href="{{ url_for('sender_intelligence', email_id=e.id) }}" class="btn">View Intel</a>
+            {% endif %}
+            {% if e.replied and e.ai_reply_text %}
+            <a href="{{ url_for('view_ai_reply', email_id=e.id) }}" class="btn btn-success">View AI Reply</a>
+            {% endif %}
+            {% if e.ai_label == 'phishing' %}
+            <form action="{{ url_for('block_sender') }}" method="POST" style="display: inline;">
+              <input type="hidden" name="sender" value="{{ e.sender }}">
+              <button type="submit" class="btn btn-danger" onclick="return confirm('Block {{ e.sender }}?')">Block Sender</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <p class="muted">No emails yet. Click "🔄 Sync" to import messages.</p>
+        {% endfor %}
+      </div>
+      
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="pagination">
+        {% if page > 1 %}
+          <a href="?page=1#emails-section" class="pagination-btn">« First</a>
+          <a href="?page={{ page - 1 }}#emails-section" class="pagination-btn">‹ Prev</a>
+        {% else %}
+          <span class="pagination-btn disabled">« First</span>
+          <span class="pagination-btn disabled">‹ Prev</span>
+        {% endif %}
+        
+        <span class="pagination-info">Page {{ page }} of {{ total_pages }}</span>
+        
+        {% if page < total_pages %}
+          <a href="?page={{ page + 1 }}#emails-section" class="pagination-btn">Next ›</a>
+          <a href="?page={{ total_pages }}#emails-section" class="pagination-btn">Last »</a>
+        {% else %}
+          <span class="pagination-btn disabled">Next ›</span>
+          <span class="pagination-btn disabled">Last »</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+    </div>
+    <!-- End Emails Tab -->
+
+    <!-- Tab Content: Threat Intelligence -->
+    <div id="threat-intel-tab" class="tab-content">
+      {% if threat_emails %}
+      <!-- 3D Globe View (Desktop) -->
+      <div class="threat-intel-container">
+        <!-- Globe Canvas -->
+        <div class="globe-canvas-wrapper">
+          <canvas id="threat-globe-canvas"></canvas>
+          
+          <!-- Loading State -->
+          <div class="globe-loading">
+            <div class="globe-loading-spinner"></div>
+            <p>Initializing threat globe...</p>
+          </div>
+          
+          <!-- Globe Controls -->
+          <div class="globe-controls">
+            <div class="globe-time-filters">
+              <button class="time-filter-btn active" data-filter="24h" data-target="threats">24H</button>
+              <button class="time-filter-btn" data-filter="7d" data-target="threats">7D</button>
+              <button class="time-filter-btn" data-filter="30d" data-target="threats">30D</button>
+              <button class="time-filter-btn" data-filter="all" data-target="threats">All</button>
+            </div>
+          </div>
+          
+          <!-- Globe Stats Overlay -->
+          <div class="globe-stats-overlay">
+            <!-- Stats populated by JS -->
+          </div>
+        </div>
+        
+        <!-- Intelligence Panel (Right Sidebar) -->
+        <div class="intel-panel">
+          <div class="intel-panel-header">
+            <h2 class="intel-panel-title">
+              <span>🧠</span> Threat Intelligence
+            </h2>
+            <p class="intel-panel-subtitle">Click a threat arc to view details</p>
+          </div>
+          <div class="intel-panel-content">
+            <div class="intel-empty-state">
+              <div class="intel-empty-icon">🎯</div>
+              <p class="intel-empty-text">
+                Select a threat on the globe to view<br>
+                detailed intelligence and analysis
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile/Tablet Fallback (Table View) -->
+      <div class="threat-intel-mobile-fallback">
+        <section class="panel">
+          <div class="section-header">
+            <h2>🧠 Threat Intelligence ({{ total_links }} threats)</h2>
+          </div>
+          <div style="margin-top: 20px; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; background: var(--bg-panel); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);">
+          <thead style="background: linear-gradient(135deg, #EC4899, #A855F7); color: white;">
+            <tr>
+              <th style="padding: 16px; text-align: left; font-weight: 600; font-size: 14px; font-family: var(--font-heading);">Risk</th>
+              <th style="padding: 16px; text-align: left; font-weight: 600; font-size: 14px; font-family: var(--font-heading);">Brand</th>
+              <th style="padding: 16px; text-align: left; font-weight: 600; font-size: 14px; font-family: var(--font-heading);">URL & Intelligence</th>
+              <th style="padding: 16px; text-align: center; font-weight: 600; font-size: 14px; font-family: var(--font-heading);">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+        {% for l in links %}
+          {% set verdict = l.sandbox_verdict | from_json if l.sandbox_verdict else {} %}
+          <tr style="border-bottom: 1px solid var(--border-subtle); transition: all 0.2s ease;" 
+              onmouseover="this.style.background='rgba(236, 72, 153, 0.05)'; this.style.borderColor='rgba(236, 72, 153, 0.3)'" 
+              onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border-subtle)'">
+            
+            <!-- Risk Column -->
+            <td style="padding: 15px; vertical-align: top;">
+              {% if l.risk_level == 'high' %}
+                <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(231,76,60,0.3);">
+                  HIGH {{ l.risk_score }}
+                </div>
+              {% elif l.risk_level == 'medium' %}
+                <div style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(243,156,18,0.3);">
+                  MED {{ l.risk_score }}
+                </div>
+              {% elif l.risk_level == 'low' %}
+                <div style="background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(149,165,166,0.3);">
+                  LOW {{ l.risk_score }}
+                </div>
+              {% else %}
+                <div style="background: #ecf0f1; color: #7f8c8d; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; text-align: center;">
+                  PENDING
+                </div>
+              {% endif %}
+            </td>
+            
+            <!-- Brand Column -->
+            <td style="padding: 15px; vertical-align: top;">
+              {% if l.impersonated_brand %}
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="font-size: 24px;">
+                    {% if l.impersonated_brand == 'Microsoft' %}🪟
+                    {% elif l.impersonated_brand == 'PayPal' %}💳
+                    {% elif l.impersonated_brand == 'Amazon' %}📦
+                    {% elif l.impersonated_brand == 'Apple' %}🍎
+                    {% elif l.impersonated_brand == 'Google' %}🔍
+                    {% elif l.impersonated_brand == 'Bank' %}🏦
+                    {% else %}🌐
+                    {% endif %}
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; font-size: 13px; color: var(--text-primary);">{{ l.impersonated_brand }}</div>
+                    {% if l.campaign_id %}
+                      <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px; font-family: var(--font-mono);">Campaign #{{ l.campaign_id[:6] }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <div style="color: var(--text-secondary); font-size: 12px; font-style: italic;">
+                  <span style="display: inline-block; animation: pulse 2s infinite;">⏳</span> Not analyzed yet
+                </div>
+              {% endif %}
+            </td>
+            
+            <!-- URL & Intelligence Column -->
+            <td style="padding: 15px; vertical-align: top;">
+              <!-- URL -->
+              <div style="margin-bottom: 8px;">
+                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); word-break: break-all; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 6px; border-left: 3px solid var(--accent-teal);">
+                  {{ l.url }}
+                </div>
+              </div>
+              
+              <!-- Intelligence Chips -->
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                {% if verdict.credential_harvest %}
+                  <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3);">🎣 Credential Harvest</span>
+                {% endif %}
+                {% if verdict.downloads_file %}
+                  <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">📥 Downloads File</span>
+                {% endif %}
+                {% if verdict.redirects_to_legit %}
+                  <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">✓ Redirects to Legit</span>
+                {% endif %}
+              </div>
+              
+              <!-- Metadata -->
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary);">
+                {% if l.country_flag and l.country_code %}
+                  <span>{{ l.country_flag }} {{ l.country_code }}</span>
+                {% endif %}
+                {% if l.hosting_ip %}
+                  <span>IP {{ l.hosting_ip }}</span>
+                {% endif %}
+                {% if l.redirect_count and l.redirect_count > 0 %}
+                  <span>🔗 {{ l.redirect_count }} redirect{{ 's' if l.redirect_count > 1 else '' }}</span>
+                {% endif %}
+                {% if l.first_seen %}
+                  <span>🕒 {{ l.first_seen.strftime('%H:%M') }}</span>
+                {% endif %}
+              </div>
+            </td>
+            
+            <!-- Actions Column -->
+            <td style="padding: 15px; text-align: center; vertical-align: top;">
+              <a href="{{ url_for('sender_intelligence', email_id=l.email_id) }}" style="background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple)); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3); font-family: var(--font-body);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(236, 72, 153, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(236, 72, 153, 0.3)'">
+                📧 View Details
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+          </tbody>
+        </table>
+      </div>
+        </section>
+      </div>
+      <!-- End Mobile Fallback -->
+      
+      {% else %}
+        <section class="panel">
+          <p class="muted" style="text-align: center; padding: 40px;">No threats detected yet.</p>
+        </section>
+      {% endif %}
+    </div>
+    <!-- End Threat Intelligence Tab -->
+
+    <!-- Tab Content: Blocklist -->
+    <div id="blocklist-tab" class="tab-content" style="padding: 24px;">
+    <!-- Blocklist Management -->
+    <section class="panel collapsible-section">
+      <div class="section-header">
+        <h2>🚫 Blocklist Management</h2>
+        <button class="toggle-btn" onclick="toggleSection('blocklist')">Show All</button>
+      </div>
+      
+      <!-- Current blocklist -->
+      <h3>Current Blocklist ({{ blocklist_entries|length }})</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Blocked Sender</th>
+              <th>For User</th>
+              <th>Blocked At</th>
+              <th>Reason</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in blocklist_entries[:3] %}
+            <tr>
+              <td class="mono">{{ entry.blocked_sender }}</td>
+              <td class="mono">{{ entry.recipient_email or 'Global' }}</td>
+              <td>{{ entry.blocked_at.strftime('%Y-%m-%d %H:%M') if entry.blocked_at else 'N/A' }}</td>
+              <td>{{ entry.reason or 'N/A' }}</td>
+              <td>
+                <form method="post" action="{{ url_for('remove_blocklist', blocklist_id=entry.id) }}" style="display:inline;">
+                  <button type="submit" class="btn-danger btn-small">Remove</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="muted">No blocklist entries yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="blocklist-content" class="collapsible-content">
+        <div class="table-wrap">
+          <table class="table">
+            <tbody>
+              {% for entry in blocklist_entries[3:] %}
+              <tr>
+                <td class="mono">{{ entry.blocked_sender }}</td>
+                <td class="mono">{{ entry.recipient_email or 'Global' }}</td>
+                <td>{{ entry.blocked_at.strftime('%Y-%m-%d %H:%M') if entry.blocked_at else 'N/A' }}</td>
+                <td>{{ entry.reason or 'N/A' }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('remove_blocklist', blocklist_id=entry.id) }}" style="display:inline;">
+                    <button type="submit" class="btn-danger btn-small">Remove</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    </div>
+    <!-- End Blocklist Tab -->
+
+  </main>
+
+  <!-- WebSocket Client Library -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  
+  <script>
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Remove active class from all tab buttons
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      tabBtns.forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      const selectedTab = document.getElementById(tabName + '-tab');
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+      }
+      
+      // Add active class to clicked button
+      if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        // If called programmatically, find and activate the button
+        const targetBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+        if (targetBtn) {
+          targetBtn.classList.add('active');
+        }
+      }
+    }
+    
+    // Check if we should show emails tab on page load (pagination)
+    window.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page');
+      const hash = window.location.hash;
+      
+      // If there's a page parameter or #emails-section hash, show emails tab
+      if (page || hash === '#emails-section') {
+        switchTab('emails');
+      }
+    });
+    
+    function toggleSection(sectionId) {
+      const content = document.getElementById(sectionId + '-content');
+      const btn = event.target;
+      
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        btn.textContent = 'Show All';
+      } else {
+        content.classList.add('expanded');
+        btn.textContent = 'Hide';
+      }
+    }
+    
+    // Real-time WebSocket connection
+    console.log('[WebSocket] Initializing connection...');
+    const socket = io({
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
+    });
+    
+    // Debug: Log ALL events (can be disabled in production)
+    socket.onAny((eventName, ...args) => {
+      console.log('[WebSocket] 🔔 Event received:', eventName, args);
+    });
+    
+    socket.on('connect', function() {
+      console.log('[WebSocket] ✅ Connected to server');
+      console.log('[WebSocket] Socket ID:', socket.id);
+      console.log('[WebSocket] Transport:', socket.io.engine.transport.name);
+    });
+    
+    socket.on('connect_error', function(error) {
+      console.error('[WebSocket] ❌ Connection error:', error);
+    });
+    
+    socket.on('reconnect_attempt', function(attemptNumber) {
+      console.log('[WebSocket] 🔄 Reconnection attempt:', attemptNumber);
+    });
+    
+    // Track if we're already showing a notification to prevent duplicates
+    let notificationShowing = false;
+    
+    socket.on('new_email', function(data) {
+      console.log('[WebSocket] New email received:', data);
+      // Show notification and update dashboard without reload
+      if (!notificationShowing) {
+        showNotification('📧 New email received!', function() {
+          updateDashboard();
+        });
+      }
+    });
+    
+    socket.on('sync_complete', function(stats) {
+      console.log('[WebSocket] Sync complete:', stats);
+      
+      // Don't show notification for sync_complete - new_email already handles it
+      if (stats && stats.imported > 0 && !notificationShowing) {
+        updateDashboard();
+      }
+    });
+    
+    // Update dashboard content without page reload
+    function updateDashboard() {
+      console.log('[DASHBOARD] Fetching updated data...');
+      
+      fetch(window.location.href, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.text())
+      .then(html => {
+        console.log('[DASHBOARD] Data received, updating DOM...');
+        
+        // Parse the new HTML
+        const parser = new DOMParser();
+        const newDoc = parser.parseFromString(html, 'text/html');
+        
+        // Update KPI cards
+        const kpiCards = document.querySelectorAll('.kpi');
+        const newKpiCards = newDoc.querySelectorAll('.kpi');
+        kpiCards.forEach((card, index) => {
+          if (newKpiCards[index]) {
+            card.textContent = newKpiCards[index].textContent;
+            // Add pulse animation
+            card.style.animation = 'none';
+            setTimeout(() => {
+              card.style.animation = 'pulse 0.5s ease';
+            }, 10);
+          }
+        });
+        
+        // Update email list if on Overview or Emails tab
+        const emailList = document.querySelector('.compact-list');
+        const newEmailList = newDoc.querySelector('.compact-list');
+        if (emailList && newEmailList) {
+          emailList.innerHTML = newEmailList.innerHTML;
+        }
+        
+        // Update pending reviews count
+        const pendingHeader = document.querySelector('.section-header h2');
+        const newPendingHeader = newDoc.querySelector('.section-header h2');
+        if (pendingHeader && newPendingHeader) {
+          pendingHeader.textContent = newPendingHeader.textContent;
+        }
+        
+        // Reload globe if on Threat Intelligence tab
+        if (window.globeInitialized && document.getElementById('threat-intel-tab')?.classList.contains('active')) {
+          console.log('[DASHBOARD] Reloading globe with new threat data...');
+          window.location.reload(); // For now, full reload to get new threat data
+        }
+        
+        console.log('[DASHBOARD] ✅ Dashboard updated successfully!');
+      })
+      .catch(error => {
+        console.error('[DASHBOARD] ❌ Error updating dashboard:', error);
+        // Fallback to reload if AJAX fails
+        console.log('[DASHBOARD] Falling back to page reload...');
+        window.location.reload();
+      });
+    }
+    
+    // Show notification banner (no countdown, auto-dismiss)
+    function showNotification(message, onComplete) {
+      if (notificationShowing) return; // Prevent duplicates
+      notificationShowing = true;
+      
+      const banner = document.createElement('div');
+      banner.innerHTML = `
+        <div style="font-size: 16px; font-weight: 600;">${message}</div>
+      `;
+      banner.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        z-index: 10000;
+        text-align: center;
+        animation: slideDown 0.3s ease;
+        min-width: 300px;
+      `;
+      document.body.appendChild(banner);
+      
+      // Auto-dismiss after 2 seconds and update dashboard
+      setTimeout(function() {
+        banner.style.animation = 'slideUp 0.3s ease';
+        setTimeout(function() {
+          banner.remove();
+          notificationShowing = false;
+          if (onComplete) onComplete();
+        }, 300);
+      }, 2000);
+    }
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    socket.on('disconnect', function() {
+      console.log('[WebSocket] Disconnected from server');
+    });
+  </script>
+
+  <!-- Sidebar Toggle JavaScript -->
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+
+    // Restore sidebar state from localStorage (default to collapsed)
+    window.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const savedState = localStorage.getItem('sidebarCollapsed');
+      
+      // Default to collapsed if no saved state
+      if (savedState === null) {
+        sidebar.classList.add('collapsed');
+        localStorage.setItem('sidebarCollapsed', 'true');
+      } else if (savedState === 'true') {
+        sidebar.classList.add('collapsed');
+      } else {
+        sidebar.classList.remove('collapsed');
+      }
+    });
+
+    // Update active nav item when switching tabs
+    function switchTab(tabName) {
+      console.log('[SWITCH_TAB] Switching to:', tabName);
+      
+      // Remove active class from all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Add active class to clicked nav item
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        const tooltip = item.getAttribute('data-tooltip');
+        const tooltipNormalized = tooltip?.toLowerCase().replace(/\s+/g, '-');
+        
+        console.log('[SWITCH_TAB] Checking:', tooltip, 'normalized:', tooltipNormalized, 'against:', tabName);
+        
+        // Match both exact and normalized versions
+        // Also handle partial matches (e.g., "threat-intel" matches "threat-intelligence")
+        if (tooltip?.toLowerCase() === tabName || 
+            tooltipNormalized === tabName ||
+            tooltipNormalized?.startsWith(tabName) ||
+            tabName?.startsWith(tooltipNormalized)) {
+          console.log('[SWITCH_TAB] ✓ Match found! Adding active class to:', tooltip);
+          item.classList.add('active');
+        }
+      });
+
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tab
+      const selectedTab = document.getElementById(tabName + '-tab');
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+        console.log('[SWITCH_TAB] ✓ Tab content activated:', tabName);
+      } else {
+        console.error('[SWITCH_TAB] ✗ Tab content not found:', tabName + '-tab');
+      }
+    }
+
+    // Close mobile sidebar when clicking outside
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const mobileBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          sidebar.classList.contains('mobile-open') && 
+          !sidebar.contains(event.target) && 
+          !mobileBtn.contains(event.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  </script>
+
+  <!-- Three.js Library (Local) -->
+  <script src="{{ url_for('static', filename='three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='OrbitControls.js') }}"></script>
+
+  <!-- Threat Intelligence Globe JavaScript -->
+  <script src="{{ url_for('static', filename='threat-intel-globe.js') }}?v=47"></script>
+  <script>
+    // Initialize threat globe when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      {% if threat_emails %}
+      // Check if Three.js loaded
+      if (typeof THREE === 'undefined') {
+        console.error('[GLOBE] Three.js not loaded');
+        const loading = document.querySelector('.globe-loading');
+        if (loading) {
+          loading.innerHTML = '<p style="color: #ef4444;">Failed to load 3D libraries. Please refresh the page.</p>';
+        }
+        return;
+      }
+
+      // Prepare threat data from emails
+      const threatData = [
+        {% for e in threat_emails %}
+        {
+          url: {{ (e.links[0].url if e.links else e.subject) | tojson }},
+          risk_level: {{ ('high' if e.ai_label == 'phishing' else ('medium' if e.ai_label == 'suspicious' else 'low')) | tojson }},
+          risk_score: {{ (e.ai_score or 50) | tojson }},
+          ai_label: {{ (e.ai_label or 'medium') | tojson }},
+          impersonated_brand: {{ (e.links[0].impersonated_brand if e.links else 'Email') | tojson }},
+          campaign_id: {{ (e.links[0].campaign_id if e.links else '') | tojson }},
+          country_code: {{ (e.sender_intel.country_code if e.sender_intel and e.sender_intel.country_code else 'XX') | tojson }},
+          country_flag: {{ (e.links[0].country_flag if e.links else '🌐') | tojson }},
+          hosting_ip: {{ (e.links[0].hosting_ip if e.links else None) | tojson }},
+          sender_ip: {{ (e.sender_intel.sender_ip if e.sender_intel else None) | tojson }},
+          redirect_count: {{ (e.links[0].redirect_count if e.links else 0) | tojson }},
+          sender_intel: {
+            country: {{ (e.sender_intel.country if e.sender_intel else None) | tojson }},
+            city: {{ (e.sender_intel.city if e.sender_intel else None) | tojson }},
+            isp: {{ (e.sender_intel.isp if e.sender_intel else None) | tojson }},
+            asn: {{ (e.sender_intel.asn if e.sender_intel else None) | tojson }},
+            is_vpn: {{ (e.sender_intel.is_vpn if e.sender_intel else False) | tojson }},
+            is_proxy: {{ (e.sender_intel.is_proxy if e.sender_intel else False) | tojson }},
+            is_tor: {{ (e.sender_intel.is_tor if e.sender_intel else False) | tojson }},
+            abuse_score: {{ (e.sender_intel.abuse_score if e.sender_intel else None) | tojson }},
+            virustotal_detections: {{ (e.sender_intel.virustotal_detections if e.sender_intel else None) | tojson }},
+            urlhaus_listed: {{ (e.sender_intel.urlhaus_listed if e.sender_intel else False) | tojson }},
+            phishtank_listed: {{ (e.sender_intel.phishtank_listed if e.sender_intel else False) | tojson }},
+            threat_level: {{ (e.sender_intel.threat_level if e.sender_intel else None) | tojson }},
+            risk_factors: {{ (e.sender_intel.risk_factors if e.sender_intel else None) | tojson }}
+          },
+          first_seen_time: {{ (e.received_at.strftime('%H:%M') if e.received_at else 'N/A') | tojson }},
+          received_at: {{ (e.received_at.strftime('%Y-%m-%d %H:%M:%S') if e.received_at else None) | tojson }},
+          email_id: {{ e.id | tojson }},
+          email_subject: {{ (e.subject or 'No Subject') | tojson }},
+          verdict: {}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
+      
+      console.log('[GLOBE] Loaded', threatData.length, 'threats from backend');
+      
+      // Initialize the threat globe when threat-intel tab is shown
+      const threatIntelTab = document.getElementById('threat-intel-tab');
+      if (threatIntelTab && threatIntelTab.classList.contains('active')) {
+        console.log('[GLOBE] Threat Intel tab is active, initializing...');
+        setTimeout(() => initThreatGlobe(threatData), 100);
+      }
+      
+      // Also init when switching to threat-intel tab
+      const originalSwitchTab = window.switchTab;
+      window.switchTab = function(tabName) {
+        originalSwitchTab(tabName);
+        if (tabName === 'threat-intel' && !window.globeInitialized) {
+          console.log('[GLOBE] Switching to Threat Intel tab, initializing...');
+          setTimeout(() => {
+            const container = document.querySelector('.globe-canvas-wrapper');
+            if (container && container.offsetParent !== null) {
+              initThreatGlobe(threatData);
+              window.globeInitialized = true;
+            } else {
+              console.error('[GLOBE] Container not visible yet, retrying...');
+              setTimeout(() => {
+                initThreatGlobe(threatData);
+                window.globeInitialized = true;
+              }, 200);
+            }
+          }, 100);
+        }
+      };
+      {% endif %}
+    });
+  </script>
+
+  <!-- Time Filter Functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle time filter clicks
+      document.querySelectorAll('.time-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const filter = this.dataset.filter;
+          const target = this.dataset.target; // 'emails' or 'threats'
+          
+          // Update active state for this filter group
+          const parent = this.closest('.time-filters, .globe-time-filters');
+          parent.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Apply filter based on target
+          if (target === 'emails') {
+            filterEmails(filter);
+          } else if (target === 'threats') {
+            filterThreats(filter);
+          }
+        });
+      });
+      
+      // Filter emails by time range
+      function filterEmails(filter) {
+        const emailCards = document.querySelectorAll('#emails-tab .email-card');
+        const now = new Date();
+        let cutoffDate;
+        
+        // Calculate cutoff date
+        switch(filter) {
+          case '24h':
+            cutoffDate = new Date(now - 24 * 60 * 60 * 1000);
+            break;
+          case '7d':
+            cutoffDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case '30d':
+            cutoffDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
+            break;
+          case 'all':
+            cutoffDate = null;
+            break;
+        }
+        
+        let visibleCount = 0;
+        
+        emailCards.forEach(card => {
+          if (!cutoffDate) {
+            // Show all
+            card.style.display = '';
+            visibleCount++;
+          } else {
+            // Check email date
+            const timeText = card.querySelector('.email-meta-item:last-child')?.textContent;
+            if (timeText) {
+              // Extract date from "🕐 YYYY-MM-DD HH:MM" format
+              const dateMatch = timeText.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/);
+              if (dateMatch) {
+                const emailDate = new Date(dateMatch[1]);
+                if (emailDate >= cutoffDate) {
+                  card.style.display = '';
+                  visibleCount++;
+                } else {
+                  card.style.display = 'none';
+                }
+              }
+            }
+          }
+        });
+        
+        // Update count
+        const countEl = document.getElementById('emails-count');
+        if (countEl) {
+          countEl.textContent = visibleCount;
+        }
+      }
+      
+      // Filter threats on globe
+      function filterThreats(filter) {
+        if (typeof window.filterGlobeThreats === 'function') {
+          window.filterGlobeThreats(filter);
+        } else {
+          console.log('[FILTER] Globe filter function not available yet');
+        }
+      }
+    });
+  </script>
+
+      </div> <!-- /container -->
+    </main> <!-- /main-content -->
+  </div> <!-- /dashboard-layout -->
+</body>
+</html>

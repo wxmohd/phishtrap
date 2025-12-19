@@ -1,0 +1,14 @@
+flask
+flask-cors
+flask-socketio
+python-socketio
+sqlalchemy
+alembic
+requests
+beautifulsoup4
+lxml
+python-dotenv
+authlib
+werkzeug
+joblib
+scikit-learn

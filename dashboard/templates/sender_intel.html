@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sender Intelligence - PhishTrap</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg">
+    <header class="topbar">
+        <div class="brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
+            PhishTrap - Sender Intelligence
+        </div>
+        <a href="/" class="btn">
+            ← Back to Dashboard
+        </a>
+    </header>
+
+    <div class="container">
+        {% if email %}
+        <div class="panel">
+            <h2>Email Details</h2>
+            <div class="intel-item">
+                <span class="intel-label">From:</span>
+                <span class="intel-value">{{ email.sender }}</span>
+            </div>
+            <div class="intel-item">
+                <span class="intel-label">Subject:</span>
+                <span class="intel-value">{{ email.subject }}</span>
+            </div>
+            <div class="intel-item">
+                <span class="intel-label">Received:</span>
+                <span class="intel-value">{{ email.received_at.strftime('%Y-%m-%d %H:%M:%S') if email.received_at else 'N/A' }}</span>
+            </div>
+            <div class="intel-item">
+                <span class="intel-label">AI Classification:</span>
+                <span class="intel-value">{{ email.ai_label }} ({{ email.ai_score }}%)</span>
+            </div>
+        </div>
+
+        {% if thread_emails and thread_emails|length > 1 %}
+        <!-- Conversation Thread -->
+        <div class="panel">
+            <h2>💬 Conversation Thread ({{ thread_emails|length }} messages)</h2>
+            {% for thread_email in thread_emails %}
+            <div style="margin: 15px 0; padding: 15px; background: {% if thread_email.id == email.id %}rgba(52, 152, 219, 0.1){% else %}var(--bg){% endif %}; border-left: 3px solid {% if thread_email.sender == email.recipient %}#3498db{% else %}#e74c3c{% endif %}; border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <strong style="color: {% if thread_email.sender == email.recipient %}#3498db{% else %}#e74c3c{% endif %};">
+                        {% if thread_email.sender == email.recipient %}🤖 You (AI Bot){% else %}📧 {{ thread_email.sender }}{% endif %}
+                    </strong>
+                    <span style="color: var(--muted); font-size: 12px;">{{ thread_email.received_at.strftime('%Y-%m-%d %H:%M') if thread_email.received_at else 'N/A' }}</span>
+                </div>
+                <div style="font-weight: 600; margin-bottom: 8px;">{{ thread_email.subject }}</div>
+                <div style="color: var(--muted); font-size: 14px; max-height: 150px; overflow-y: auto;">
+                    {{ thread_email.body_text[:500] if thread_email.body_text else '(No content)' }}
+                    {% if thread_email.body_text and thread_email.body_text|length > 500 %}...{% endif %}
+                </div>
+                {% if thread_email.id == email.id %}
+                <div style="margin-top: 8px; padding: 6px 12px; background: rgba(52, 152, 219, 0.2); border-radius: 4px; font-size: 12px; color: #3498db; font-weight: 600;">
+                    ← Current Email
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if intel %}
+        <!-- Sender Information -->
+        {% if intel.latitude and intel.longitude %}
+        <div class="panel">
+            <h2>🌍 Sender Location</h2>
+            <div id="map"></div>
+        </div>
+        {% endif %}
+
+        <!-- Intelligence Grid -->
+        <div class="intel-grid">
+            <!-- Geolocation -->
+            <div class="intel-card">
+                <h3>📍 Geolocation</h3>
+                <div class="intel-item">
+                    <span class="intel-label">Country:</span>
+                    <span class="intel-value">{{ intel.country or 'Unknown' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">City:</span>
+                    <span class="intel-value">{{ intel.city or 'Unknown' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">ISP:</span>
+                    <span class="intel-value">{{ intel.isp or 'Unknown' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">IP Address:</span>
+                    <span class="intel-value">{{ intel.sender_ip or 'Not detected' }}</span>
+                </div>
+            </div>
+
+            <!-- IP Reputation -->
+            <div class="intel-card">
+                <h3>🔍 IP Reputation</h3>
+                <div class="intel-item">
+                    <span class="intel-label">Reputation:</span>
+                    <span class="intel-value">{{ intel.ip_reputation|upper if intel.ip_reputation else 'Unknown' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Abuse Score:</span>
+                    <span class="intel-value">{{ intel.abuse_score or 'N/A' }}/100</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Abuse Reports:</span>
+                    <span class="intel-value">{{ intel.abuse_reports_count or 0 }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">VPN/Proxy:</span>
+                    <span class="intel-value">{{ 'Yes ⚠️' if intel.is_vpn or intel.is_proxy else 'No' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Tor Network:</span>
+                    <span class="intel-value">{{ 'Yes 🚨' if intel.is_tor else 'No' }}</span>
+                </div>
+            </div>
+
+            <!-- Domain Intelligence -->
+            <div class="intel-card">
+                <h3>🌐 Domain Analysis</h3>
+                <div class="intel-item">
+                    <span class="intel-label">Domain:</span>
+                    <span class="intel-value">{{ intel.sender_domain or 'N/A' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Domain Age:</span>
+                    <span class="intel-value">
+                        {% if intel.domain_age_days is not none %}
+                            {{ intel.domain_age_days }} days
+                            {% if intel.domain_age_days < 30 %}⚠️{% endif %}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Registrar:</span>
+                    <span class="intel-value">{{ intel.domain_registrar or 'Unknown' }}</span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">Privacy Protected:</span>
+                    <span class="intel-value">{{ 'Yes' if intel.privacy_protected else 'No' }}</span>
+                </div>
+            </div>
+
+            <!-- Threat Intelligence -->
+            <div class="intel-card">
+                <h3>🛡️ Threat Feeds</h3>
+                <div class="intel-item">
+                    <span class="intel-label">VirusTotal:</span>
+                    <span class="intel-value">
+                        {% if intel.virustotal_detections is not none %}
+                            {{ intel.virustotal_detections }} vendors flagged
+                            {% if intel.virustotal_detections > 0 %}🚨{% endif %}
+                        {% else %}
+                            Not checked
+                        {% endif %}
+                    </span>
+                </div>
+                {% if vt_categories %}
+                <div class="intel-item">
+                    <span class="intel-label">Categories:</span>
+                    <span class="intel-value">{{ ', '.join(vt_categories) }}</span>
+                </div>
+                {% endif %}
+                <div class="intel-item">
+                    <span class="intel-label">URLhaus (Malware):</span>
+                    <span class="intel-value">
+                        {% if intel.urlhaus_listed %}
+                            🚨 MALWARE DETECTED
+                        {% else %}
+                            Clean
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">PhishTank:</span>
+                    <span class="intel-value">
+                        {% if intel.phishtank_listed %}
+                            🚨 PHISHING DETECTED
+                        {% else %}
+                            {% if 'PHISHTANK_API_KEY' in config %}
+                                Clean
+                            {% else %}
+                                Not configured
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="intel-item">
+                    <span class="intel-label">AlienVault OTX:</span>
+                    <span class="intel-value">
+                        {% if intel.alienvault_tags %}
+                            {% set otx_tags = intel.alienvault_tags|from_json %}
+                            {% if otx_tags %}
+                                🚨 {{ otx_tags|length }} threat pulse(s)
+                            {% else %}
+                                Clean
+                            {% endif %}
+                        {% else %}
+                            Clean
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="panel">
+            <p>⚠️ No sender intelligence data available for this email.</p>
+            <p>Intelligence analysis may still be in progress or failed to complete.</p>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="panel">
+            <p>❌ Email not found.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if map_data %}
+    <script>
+        try {
+            // Parse map data from backend
+            var mapData = {{ map_data|safe }};
+            
+            // Validate map data
+            if (!mapData || !mapData.latitude || !mapData.longitude) {
+                console.error('Invalid map data');
+                throw new Error('Invalid map data');
+            }
+            
+            // Initialize map
+            var map = L.map('map').setView([mapData.latitude, mapData.longitude], 8);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add marker for sender location
+            var marker = L.marker([mapData.latitude, mapData.longitude]).addTo(map);
+            marker.bindPopup(mapData.popup).openPopup();
+            
+            // Add circle to show approximate area
+            var circle = L.circle([mapData.latitude, mapData.longitude], {
+                color: mapData.color,
+                fillColor: mapData.fillColor,
+                fillOpacity: 0.2,
+                radius: 50000
+            }).addTo(map);
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            document.getElementById('map').innerHTML = '<p style="text-align:center;padding:20px;color:#999;">Map could not be loaded</p>';
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

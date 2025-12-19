@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - PhishTrap</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}">
+</head>
+<body class="bg">
+  <header class="topbar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
+      PhishTrap
+    </div>
+    <nav>
+      <a class="link" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+      <span class="admin">{{ admin_email }}</span>
+      <a class="link" href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash">
+          {% for cat,msg in messages %}
+            <div class="flash-item {{cat}}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="panel">
+      <h2>👥 Connected Users</h2>
+      <p class="muted">Manage email accounts connected to PhishTrap</p>
+
+      {% if users %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Provider</th>
+              <th>Connected</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td><strong>{{ user.email }}</strong></td>
+              <td>
+                {% if user.provider == 'google' %}
+                  <span class="badge badge-google">📧 Gmail</span>
+                {% elif user.provider == 'microsoft' %}
+                  <span class="badge badge-microsoft">📨 Outlook</span>
+                {% else %}
+                  {{ user.provider }}
+                {% endif %}
+              </td>
+              <td>{{ user.connected_at.strftime('%Y-%m-%d %H:%M') if user.connected_at else 'N/A' }}</td>
+              <td>
+                {% if user.revoked_at %}
+                  <span class="badge badge-revoked">❌ Disconnected</span>
+                {% else %}
+                  <span class="badge badge-active">✅ Active</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if not user.revoked_at %}
+                <form method="post" action="{{ url_for('disconnect_user') }}" style="display: inline;" 
+                      onsubmit="return confirm('Disconnect {{ user.email }}?\n\nThis will:\n- Remove the account\n- Delete all emails from this account\n- Delete personal blocklist entries\n\nThis cannot be undone!');">
+                  <input type="hidden" name="email" value="{{ user.email }}">
+                  <button type="submit" class="btn btn-danger btn-small">🔌 Disconnect</button>
+                </form>
+                {% else %}
+                <span class="muted">Already disconnected</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 2rem; padding: 1.5rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px;">
+        <h3 style="margin-top: 0; color: var(--text); font-size: 1.1rem;">📊 Summary</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text); line-height: 1.8;">
+          <li><strong style="color: var(--accent);">Total Connected:</strong> <span style="color: var(--ok);">{{ users|selectattr('revoked_at', 'none')|list|length }}</span></li>
+          <li><strong style="color: var(--accent);">Total Disconnected:</strong> <span style="color: var(--muted);">{{ users|rejectattr('revoked_at', 'none')|list|length }}</span></li>
+        </ul>
+      </div>
+
+      {% else %}
+      <div style="text-align: center; padding: 3rem;">
+        <p style="font-size: 1.2rem; color: #666;">No users connected yet.</p>
+        <p>
+          <a href="{{ url_for('user_login') }}" class="btn">Connect an Account</a>
+        </p>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

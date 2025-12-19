@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PhishTrap – Admin Login</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="login-page">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Logo Row -->
+      <div class="logo-row">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="width: 56px; height: 56px; object-fit: contain;">
+        <div>
+          <h1>PhishTrap</h1>
+          <p class="subtitle">Administrator Console</p>
+        </div>
+      </div>
+
+      <h2 class="form-title">Admin Sign in</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash">
+            {% for cat,msg in messages %}
+              <div class="flash-item {{cat}}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; color: var(--text-secondary);">Admin Email</label>
+          <input type="email" name="email" placeholder="admin@example.com" required>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; color: var(--text-secondary);">Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="primary-btn" style="width: 100%;">Log in</button>
+      </form>
+
+      <p style="text-align: center; margin-top: 1.5rem; font-size: 13px; color: var(--text-muted);">
+        <a href="{{ url_for('user_login') }}" style="color: var(--accent-teal); text-decoration: none; font-weight: 500;">← Back to user sign-in</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

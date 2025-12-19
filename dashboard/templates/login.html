@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PhishTrap – User Sign-in</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="login-page">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Logo Row -->
+      <div class="logo-row">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="width: 56px; height: 56px; object-fit: contain;">
+        <div>
+          <h1>PhishTrap</h1>
+          <p class="subtitle">AI Phishing Sandbox Console</p>
+        </div>
+      </div>
+
+      <h2 class="form-title">Sign in</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash">
+            {% for cat,msg in messages %}
+              <div class="flash-item {{cat}}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; color: var(--text-secondary);">Email</label>
+          <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; color: var(--text-secondary);">Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="primary-btn" style="width: 100%; margin-bottom: 1rem;">Sign in</button>
+      </form>
+
+      <div style="position: relative; text-align: center; margin: 1.5rem 0;">
+        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border-subtle);"></div>
+        <span style="position: relative; background: rgba(15, 23, 42, 0.85); padding: 0 1rem; color: var(--text-muted); font-size: 13px;">or</span>
+      </div>
+
+      <a href="{{ url_for('google_login') }}" class="btn" style="width: 100%; margin-bottom: 0.75rem; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
+          <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </a>
+      
+      <a href="{{ url_for('microsoft_login') }}" class="btn" style="width: 100%; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h8.571v8.571H0V0z" fill="#F25022"/>
+          <path d="M9.429 0H18v8.571H9.429V0z" fill="#7FBA00"/>
+          <path d="M0 9.429h8.571V18H0V9.429z" fill="#00A4EF"/>
+          <path d="M9.429 9.429H18V18H9.429V9.429z" fill="#FFB900"/>
+        </svg>
+        Continue with Microsoft
+      </a>
+
+      <p style="text-align: center; margin-top: 1.5rem; font-size: 13px; color: var(--text-muted);">
+        <a href="{{ url_for('admin_login') }}" style="color: var(--accent-pink); text-decoration: none; font-weight: 500;">Admin login →</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

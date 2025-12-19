@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PhishTrap – AI Reply</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}?v=45">
+  <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}?v=36">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}?v=36">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="bg">
+  <header class="topbar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
+      PhishTrap - AI Reply
+    </div>
+    <a href="{{ url_for('dashboard') }}" class="btn">
+      ← Back to Dashboard
+    </a>
+  </header>
+
+  <div class="container">
+    <div class="panel">
+      <h1 style="margin: 0; font-size: 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">🤖 AI Bot Reply</h1>
+    </div>
+    
+    <!-- Original Email -->
+    <div class="panel" style="border-left: 4px solid #ef4444;">
+      <h2 style="color: #ec4899; font-size: 20px; margin-bottom: 20px;">📧 Original Phishing Email</h2>
+      <div class="intel-item">
+        <span class="intel-label">Subject:</span>
+        <span class="intel-value">{{ email.subject }}</span>
+      </div>
+      <div class="intel-item">
+        <span class="intel-label">From:</span>
+        <span class="intel-value">{{ email.sender }}</span>
+      </div>
+      <div class="intel-item">
+        <span class="intel-label">To:</span>
+        <span class="intel-value">{{ email.recipient }}</span>
+      </div>
+      <div class="intel-item">
+        <span class="intel-label">Received:</span>
+        <span class="intel-value">{{ email.received_at.strftime('%Y-%m-%d %H:%M:%S') if email.received_at else 'N/A' }}</span>
+      </div>
+      <div class="intel-item">
+        <span class="intel-label">AI Classification:</span>
+        <span class="intel-value">
+          {% if email.ai_label == 'phishing' %}
+            <span class="badge err">{{ email.ai_label|upper }}</span>
+            <span class="badge err">{{ email.ai_score }}%</span>
+          {% elif email.ai_label == 'suspicious' %}
+            <span class="badge warn">{{ email.ai_label|upper }}</span>
+            <span class="badge warn">{{ email.ai_score }}%</span>
+          {% else %}
+            <span class="badge ok">{{ email.ai_label|upper }}</span>
+            <span class="badge ok">{{ email.ai_score }}%</span>
+          {% endif %}
+        </span>
+      </div>
+      
+      <div style="margin-top: 20px;">
+        <h3 style="color: #a855f7; font-size: 16px; margin-bottom: 12px;">Email Body:</h3>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 12px; border: 1px solid rgba(236, 72, 153, 0.3); max-height: 300px; overflow-y: auto; backdrop-filter: blur(10px);">
+          <pre style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #e2e8f0; line-height: 1.6; font-family: 'Courier New', monospace; font-size: 14px;">{{ email.body_text or email.body_html or 'No content' }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Reply -->
+    <div class="panel" style="border-left: 4px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%);">
+      <h2 style="color: #10b981; font-size: 20px; margin-bottom: 20px;">🤖 AI Bot's Reply</h2>
+      <div class="intel-item">
+        <span class="intel-label">Reply Sent At:</span>
+        <span class="intel-value">{{ email.replied_at.strftime('%Y-%m-%d %H:%M:%S') if email.replied_at else 'N/A' }}</span>
+      </div>
+      <div class="intel-item">
+        <span class="intel-label">Status:</span>
+        <span class="intel-value"><span class="badge ok">✅ Sent Successfully</span></span>
+      </div>
+      
+      <div style="margin-top: 20px;">
+        <h3 style="color: #34d399; font-size: 16px; margin-bottom: 12px;">Reply Content:</h3>
+        <div style="background: rgba(16, 185, 129, 0.1); padding: 24px; border-radius: 12px; border: 2px solid rgba(16, 185, 129, 0.4); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2); backdrop-filter: blur(10px);">
+          <pre style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #d1fae5; line-height: 1.8; font-family: 'Courier New', monospace; font-size: 14px;">{{ email.ai_reply_text }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="panel">
+      <h3 style="color: #ec4899; font-size: 18px; margin-bottom: 16px;">Actions</h3>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{{ url_for('dashboard') }}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">← Back to Dashboard</a>
+        <a href="{{ url_for('sender_intelligence', email_id=email.id) }}" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none;">🔍 View Sender Intel</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
