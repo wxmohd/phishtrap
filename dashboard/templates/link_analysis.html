@@ -236,7 +236,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🔗 Link Analysis & Network Graph</h1>
+            <h1>Link Analysis & Network Graph</h1>
             <div class="nav-buttons">
                 <a href="{{ url_for('dashboard') }}" class="btn btn-primary">← Back to Dashboard</a>
             </div>
@@ -327,16 +327,16 @@
 
                 <!-- Detected Clusters -->
                 <div class="panel">
-                    <h3>🔍 Detected Campaigns</h3>
+                    <h3>Detected Campaigns</h3>
                     {% if clusters %}
                         <ul class="cluster-list">
                             {% for cluster in clusters[:5] %}
                                 <li class="cluster-item">
                                     <div class="type">
                                         {% if cluster.type == 'typosquatting_campaign' %}
-                                            ⚠️ Typosquatting Campaign
+                                            Typosquatting Campaign
                                         {% else %}
-                                            🔗 Same Domain Campaign
+                                            Same Domain Campaign
                                         {% endif %}
                                     </div>
                                     <div class="details">

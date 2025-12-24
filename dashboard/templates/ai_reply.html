@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}?v=36">
   <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}?v=36">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg">
   <header class="topbar">
@@ -15,19 +17,24 @@
       <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
       PhishTrap - AI Reply
     </div>
-    <a href="{{ url_for('dashboard') }}" class="btn">
-      ← Back to Dashboard
-    </a>
+    <div style="display: flex; gap: 12px;">
+      <a href="{{ url_for('sender_intelligence', email_id=email.id) }}" class="btn" style="background: linear-gradient(135deg, #ec4899, #a855f7); border: none; color: white;">
+        <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i> View Intel
+      </a>
+      <a href="{{ url_for('dashboard') }}#emails-section" class="btn">
+        <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Back to Emails
+      </a>
+    </div>
   </header>
 
   <div class="container">
     <div class="panel">
-      <h1 style="margin: 0; font-size: 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">🤖 AI Bot Reply</h1>
+      <h1 style="margin: 0; font-size: 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AI Bot Reply</h1>
     </div>
     
     <!-- Original Email -->
     <div class="panel" style="border-left: 4px solid #ef4444;">
-      <h2 style="color: #ec4899; font-size: 20px; margin-bottom: 20px;">📧 Original Phishing Email</h2>
+      <h2 style="color: #ec4899; font-size: 20px; margin-bottom: 20px;">Original Phishing Email</h2>
       <div class="intel-item">
         <span class="intel-label">Subject:</span>
         <span class="intel-value">{{ email.subject }}</span>
@@ -69,15 +76,15 @@
     </div>
 
     <!-- AI Reply -->
-    <div class="panel" style="border-left: 4px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%);">
-      <h2 style="color: #10b981; font-size: 20px; margin-bottom: 20px;">🤖 AI Bot's Reply</h2>
+    <div class="panel" style="border-left: 4px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); margin-top: 32px;">
+      <h2 style="color: #10b981; font-size: 20px; margin-bottom: 20px;">AI Bot's Reply</h2>
       <div class="intel-item">
         <span class="intel-label">Reply Sent At:</span>
         <span class="intel-value">{{ email.replied_at.strftime('%Y-%m-%d %H:%M:%S') if email.replied_at else 'N/A' }}</span>
       </div>
       <div class="intel-item">
         <span class="intel-label">Status:</span>
-        <span class="intel-value"><span class="badge ok">✅ Sent Successfully</span></span>
+        <span class="intel-value"><span class="badge ok">Sent Successfully</span></span>
       </div>
       
       <div style="margin-top: 20px;">
@@ -88,14 +95,11 @@
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="panel">
-      <h3 style="color: #ec4899; font-size: 18px; margin-bottom: 16px;">Actions</h3>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <a href="{{ url_for('dashboard') }}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">← Back to Dashboard</a>
-        <a href="{{ url_for('sender_intelligence', email_id=email.id) }}" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none;">🔍 View Sender Intel</a>
-      </div>
-    </div>
   </div>
+  
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
 </body>
 </html>

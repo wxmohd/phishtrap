@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg">
     <header class="topbar">
@@ -17,9 +19,16 @@
             <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
             PhishTrap - Sender Intelligence
         </div>
-        <a href="/" class="btn">
-            ← Back to Dashboard
-        </a>
+        <div style="display: flex; gap: 12px;">
+            {% if email and email.replied and email.ai_reply_text %}
+            <a href="{{ url_for('view_ai_reply', email_id=email.id) }}" class="btn" style="background: linear-gradient(135deg, #ec4899, #a855f7); border: none; color: white;">
+                <i data-lucide="bot" style="width: 18px; height: 18px;"></i> View AI Reply
+            </a>
+            {% endif %}
+            <a href="{{ url_for('dashboard') }}#emails-section" class="btn">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Back to Emails
+            </a>
+        </div>
     </header>
 
     <div class="container">
@@ -47,12 +56,12 @@
         {% if thread_emails and thread_emails|length > 1 %}
         <!-- Conversation Thread -->
         <div class="panel">
-            <h2>💬 Conversation Thread ({{ thread_emails|length }} messages)</h2>
+            <h2>Conversation Thread ({{ thread_emails|length }} messages)</h2>
             {% for thread_email in thread_emails %}
             <div style="margin: 15px 0; padding: 15px; background: {% if thread_email.id == email.id %}rgba(52, 152, 219, 0.1){% else %}var(--bg){% endif %}; border-left: 3px solid {% if thread_email.sender == email.recipient %}#3498db{% else %}#e74c3c{% endif %}; border-radius: 4px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <strong style="color: {% if thread_email.sender == email.recipient %}#3498db{% else %}#e74c3c{% endif %};">
-                        {% if thread_email.sender == email.recipient %}🤖 You (AI Bot){% else %}📧 {{ thread_email.sender }}{% endif %}
+                        {% if thread_email.sender == email.recipient %}You (AI Bot){% else %}{{ thread_email.sender }}{% endif %}
                     </strong>
                     <span style="color: var(--muted); font-size: 12px;">{{ thread_email.received_at.strftime('%Y-%m-%d %H:%M') if thread_email.received_at else 'N/A' }}</span>
                 </div>
@@ -105,7 +114,7 @@
 
             <!-- IP Reputation -->
             <div class="intel-card">
-                <h3>🔍 IP Reputation</h3>
+                <h3>IP Reputation</h3>
                 <div class="intel-item">
                     <span class="intel-label">Reputation:</span>
                     <span class="intel-value">{{ intel.ip_reputation|upper if intel.ip_reputation else 'Unknown' }}</span>
@@ -269,5 +278,10 @@
         }
     </script>
     {% endif %}
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
 </body>
 </html>

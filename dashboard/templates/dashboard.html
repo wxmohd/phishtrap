@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}?v=48">
   <link rel="stylesheet" href="{{ url_for('static', filename='threat-intel-globe.css') }}?v=36">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg">
   <div class="dashboard-layout">
@@ -29,42 +31,40 @@
       <!-- Navigation Items -->
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-tooltip="Overview" onclick="switchTab('overview'); return false;">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon"><i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i></span>
           <span class="nav-label">Overview</span>
           {% if pending_reviews|length > 0 %}
           <span class="nav-badge">{{ pending_reviews|length }}</span>
           {% endif %}
         </a>
         <a href="#" class="nav-item" data-tooltip="Emails" onclick="switchTab('emails'); return false;">
-          <span class="nav-icon">📧</span>
+          <span class="nav-icon"><i data-lucide="mail" style="width: 20px; height: 20px;"></i></span>
           <span class="nav-label">Emails</span>
           <span class="nav-badge">{{ total_emails }}</span>
         </a>
         <a href="#" class="nav-item" data-tooltip="Threat Intelligence" onclick="switchTab('threat-intel'); return false;">
-          <span class="nav-icon">🧠</span>
+          <span class="nav-icon"><i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i></span>
           <span class="nav-label">Threat Intel</span>
           <span class="nav-badge">{{ total_links }}</span>
         </a>
         <a href="#" class="nav-item" data-tooltip="Blocklist" onclick="switchTab('blocklist'); return false;">
-          <span class="nav-icon">🚫</span>
+          <span class="nav-icon"><i data-lucide="ban" style="width: 20px; height: 20px;"></i></span>
           <span class="nav-label">Blocklist</span>
         </a>
       </nav>
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <div class="sidebar-user-avatar">{{ admin_email[0]|upper }}</div>
-          <div class="sidebar-user-info">
-            <div class="sidebar-user-name">{{ admin_email }}</div>
-            <div class="sidebar-user-role">Administrator</div>
-          </div>
-          <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Logout">⎋</a>
-        </div>
+        <a href="{{ url_for('logout') }}" class="sidebar-logout-btn" title="Logout" data-tooltip="Logout">
+          <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
+          <span class="logout-label">Logout</span>
+        </a>
       </div>
 
       <!-- Collapse Toggle -->
-      <div class="sidebar-toggle" onclick="toggleSidebar()"></div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+        <i data-lucide="chevron-left" class="toggle-icon"></i>
+      </button>
     </aside>
 
     <!-- Main Content Area -->
@@ -72,7 +72,7 @@
       <!-- Top Bar (simplified) -->
       <div class="main-topbar">
         <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
-          <span style="font-size: 20px;">☰</span>
+          <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
         </button>
         <h1 class="main-topbar-title">Dashboard</h1>
         <div class="main-topbar-actions">
@@ -103,7 +103,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">Replied</div>
+        <div class="card-title">✓Replied</div>
         <div class="kpi">{{ total_replied }}</div>
       </div>
 
@@ -114,9 +114,9 @@
     </section>
 
     <!-- Pending Reviews Section -->
-    <section class="panel collapsible-section" style="margin-bottom: 24px;">
+    <section class="panel collapsible-section" id="pending-reviews-section" style="margin-bottom: 24px;">
         <div class="section-header">
-          <h2>⚠️ Pending Admin Review ({{ pending_reviews|length }})</h2>
+          <h2>Pending Admin Review ({{ pending_reviews|length }})</h2>
           {% if pending_reviews|length > 3 %}
           <button class="toggle-btn" onclick="toggleSection('pending')">Show All</button>
           {% endif %}
@@ -130,14 +130,14 @@
           {% for email in pending_reviews[:3] %}
           <div class="email-card review-card">
             <div class="email-card-header">
-              <div class="email-subject">⚠️ {{ email.subject }}</div>
+              <div class="email-subject"> {{ email.subject }}</div>
               <div class="email-badge-group">
                 <span class="badge uncertain">{{ email.ai_score }}%</span>
               </div>
             </div>
             <div class="email-meta">
-              <div class="email-meta-item">📤 {{ email.sender }}</div>
-              <div class="email-meta-item">🕐 {{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
+              <div class="email-meta-item">{{ email.sender }}</div>
+              <div class="email-meta-item">{{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
             </div>
             <div class="email-actions">
               <form method="post" action="{{ url_for('approve_reply', email_id=email.id) }}" style="display:inline;">
@@ -160,24 +160,24 @@
             {% for email in pending_reviews[3:] %}
             <div class="email-card review-card">
               <div class="email-card-header">
-                <div class="email-subject">⚠️ {{ email.subject }}</div>
+                <div class="email-subject">{{ email.subject }}</div>
                 <div class="email-badge-group">
                   <span class="badge uncertain">{{ email.ai_score }}%</span>
                 </div>
               </div>
               <div class="email-meta">
-                <div class="email-meta-item">📤 {{ email.sender }}</div>
-                <div class="email-meta-item">🕐 {{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
+                <div class="email-meta-item">{{ email.sender }}</div>
+                <div class="email-meta-item">{{ email.received_at.strftime('%Y-%m-%d %H:%M') if email.received_at else 'N/A' }}</div>
               </div>
               <div class="email-actions">
                 <form method="post" action="{{ url_for('approve_reply', email_id=email.id) }}" style="display:inline;">
-                  <button type="submit" class="btn btn-success">🤖 Let AI Reply</button>
+                  <button type="submit" class="btn btn-success">Let AI Reply</button>
                 </form>
                 <form method="post" action="{{ url_for('mark_as_legit', email_id=email.id) }}" style="display:inline;">
-                  <button type="submit" class="btn btn-primary">✅ Mark as Legit</button>
+                  <button type="submit" class="btn btn-primary">Mark as Legit</button>
                 </form>
                 <form method="post" action="{{ url_for('blocklist_from_review', email_id=email.id) }}" style="display:inline;">
-                  <button type="submit" class="btn btn-danger">🚫 Block Sender</button>
+                  <button type="submit" class="btn btn-danger"> Block Sender</button>
                 </form>
               </div>
             </div>
@@ -192,7 +192,7 @@
     <!-- Recent Emails Section -->
     <section class="panel" id="emails-section" style="margin-bottom: 24px;">
       <div class="section-header">
-        <h2>📧 Recent Emails ({{ total_emails }} total)</h2>
+        <h2>Recent Emails ({{ total_emails }} total)</h2>
       </div>
       
       <!-- Email cards -->
@@ -204,10 +204,10 @@
             <div class="email-badge-group">
               {% if e.admin_decision == 'mark_legit' %}
                 <span class="badge ok">LEGIT</span>
-                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN OVERRIDE</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">ADMIN OVERRIDE</span>
               {% elif e.review_status == 'admin_approved' or e.admin_decision == 'approve_reply' %}
                 <span class="badge err">PHISHING</span>
-                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN APPROVED</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">ADMIN APPROVED</span>
               {% elif e.ai_label == 'phishing' %}
                 <span class="badge err">PHISHING</span>
                 <span class="badge err">{{ e.ai_score }}%</span>
@@ -226,8 +226,8 @@
             </div>
           </div>
           <div class="email-meta">
-            <div class="email-meta-item">📤 {{ e.sender }}</div>
-            <div class="email-meta-item">🕐 {{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else 'N/A' }}</div>
+            <div class="email-meta-item">{{ e.sender }}</div>
+            <div class="email-meta-item">{{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else 'N/A' }}</div>
           </div>
         </div>
         {% else %}
@@ -265,7 +265,7 @@
     <div id="emails-tab" class="tab-content" style="padding: 24px;">
     <section class="panel" id="emails-section">
       <div class="section-header">
-        <h2>📧 Recent Emails (<span id="emails-count">{{ total_emails }}</span> total)</h2>
+        <h2>Recent Emails (<span id="emails-count">{{ total_emails }}</span> total)</h2>
         <div class="time-filters">
           <button class="time-filter-btn active" data-filter="24h" data-target="emails">24H</button>
           <button class="time-filter-btn" data-filter="7d" data-target="emails">7D</button>
@@ -279,14 +279,14 @@
         {% for e in emails %}
         <div class="email-card">
           <div class="email-card-header">
-            <div class="email-subject">📧 {{ e.subject or '(no subject)' }}</div>
+            <div class="email-subject">{{ e.subject or '(no subject)' }}</div>
             <div class="email-badge-group">
               {% if e.admin_decision == 'mark_legit' %}
                 <span class="badge ok">LEGIT</span>
-                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN OVERRIDE</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">ADMIN OVERRIDE</span>
               {% elif e.review_status == 'admin_approved' or e.admin_decision == 'approve_reply' %}
                 <span class="badge err">PHISHING</span>
-                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">👤 ADMIN APPROVED</span>
+                <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">ADMIN APPROVED</span>
               {% elif e.ai_label == 'phishing' %}
                 <span class="badge err">PHISHING</span>
                 <span class="badge err">{{ e.ai_score }}%</span>
@@ -300,15 +300,15 @@
                 <span class="badge">{{ e.ai_score }}%</span>
               {% endif %}
               {% if e.blocked %}
-              <span class="badge" style="background: #95a5a6;">🚫 Blocked</span>
+              <span class="badge" style="background: #95a5a6;">Blocked</span>
               {% endif %}
             </div>
           </div>
           <div class="email-meta">
-            <div class="email-meta-item">👤 {{ e.sender }}</div>
-            <div class="email-meta-item">🕐 {{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else '' }}</div>
+            <div class="email-meta-item">{{ e.sender }}</div>
+            <div class="email-meta-item">{{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else '' }}</div>
             {% if e.replied %}
-            <div class="email-meta-item">✅ Replied</div>
+            <div class="email-meta-item">✓ Replied</div>
             {% endif %}
           </div>
           <div class="email-actions">
@@ -327,7 +327,7 @@
           </div>
         </div>
         {% else %}
-        <p class="muted">No emails yet. Click "🔄 Sync" to import messages.</p>
+        <p class="muted">No emails yet.</p>
         {% endfor %}
       </div>
       
@@ -457,13 +457,13 @@
               {% if l.impersonated_brand %}
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <div style="font-size: 24px;">
-                    {% if l.impersonated_brand == 'Microsoft' %}🪟
-                    {% elif l.impersonated_brand == 'PayPal' %}💳
-                    {% elif l.impersonated_brand == 'Amazon' %}📦
-                    {% elif l.impersonated_brand == 'Apple' %}🍎
-                    {% elif l.impersonated_brand == 'Google' %}🔍
-                    {% elif l.impersonated_brand == 'Bank' %}🏦
-                    {% else %}🌐
+                    {% if l.impersonated_brand == 'Microsoft' %}
+                    {% elif l.impersonated_brand == 'PayPal' %}
+                    {% elif l.impersonated_brand == 'Amazon' %}
+                    {% elif l.impersonated_brand == 'Apple' %}
+                    {% elif l.impersonated_brand == 'Google' %}
+                    {% elif l.impersonated_brand == 'Bank' %}
+                    {% else %}
                     {% endif %}
                   </div>
                   <div>
@@ -475,7 +475,7 @@
                 </div>
               {% else %}
                 <div style="color: var(--text-secondary); font-size: 12px; font-style: italic;">
-                  <span style="display: inline-block; animation: pulse 2s infinite;">⏳</span> Not analyzed yet
+                  <span style="display: inline-block; animation: pulse 2s infinite;"></span> Not analyzed yet
                 </div>
               {% endif %}
             </td>
@@ -511,10 +511,10 @@
                   <span>IP {{ l.hosting_ip }}</span>
                 {% endif %}
                 {% if l.redirect_count and l.redirect_count > 0 %}
-                  <span>🔗 {{ l.redirect_count }} redirect{{ 's' if l.redirect_count > 1 else '' }}</span>
+                  <span>{{ l.redirect_count }} redirect{{ 's' if l.redirect_count > 1 else '' }}</span>
                 {% endif %}
                 {% if l.first_seen %}
-                  <span>🕒 {{ l.first_seen.strftime('%H:%M') }}</span>
+                  <span>{{ l.first_seen.strftime('%H:%M') }}</span>
                 {% endif %}
               </div>
             </td>
@@ -522,7 +522,7 @@
             <!-- Actions Column -->
             <td style="padding: 15px; text-align: center; vertical-align: top;">
               <a href="{{ url_for('sender_intelligence', email_id=l.email_id) }}" style="background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple)); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3); font-family: var(--font-body);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(236, 72, 153, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(236, 72, 153, 0.3)'">
-                📧 View Details
+                View Details
               </a>
             </td>
           </tr>
@@ -547,7 +547,7 @@
     <!-- Blocklist Management -->
     <section class="panel collapsible-section">
       <div class="section-header">
-        <h2>🚫 Blocklist Management</h2>
+        <h2>Blocklist Management</h2>
         <button class="toggle-btn" onclick="toggleSection('blocklist')">Show All</button>
       </div>
       
@@ -683,21 +683,21 @@
     
     // Debug: Log ALL events (can be disabled in production)
     socket.onAny((eventName, ...args) => {
-      console.log('[WebSocket] 🔔 Event received:', eventName, args);
+      console.log('[WebSocket] Event received:', eventName, args);
     });
     
     socket.on('connect', function() {
-      console.log('[WebSocket] ✅ Connected to server');
+      console.log('[WebSocket] Connected to server');
       console.log('[WebSocket] Socket ID:', socket.id);
       console.log('[WebSocket] Transport:', socket.io.engine.transport.name);
     });
     
     socket.on('connect_error', function(error) {
-      console.error('[WebSocket] ❌ Connection error:', error);
+      console.error('[WebSocket] Connection error:', error);
     });
     
     socket.on('reconnect_attempt', function(attemptNumber) {
-      console.log('[WebSocket] 🔄 Reconnection attempt:', attemptNumber);
+      console.log('[WebSocket] Reconnection attempt:', attemptNumber);
     });
     
     // Track if we're already showing a notification to prevent duplicates
@@ -707,7 +707,7 @@
       console.log('[WebSocket] New email received:', data);
       // Show notification and update dashboard without reload
       if (!notificationShowing) {
-        showNotification('📧 New email received!', function() {
+        showNotification('New email received!', function() {
           updateDashboard();
         });
       }
@@ -753,18 +753,33 @@
           }
         });
         
-        // Update email list if on Overview or Emails tab
-        const emailList = document.querySelector('.compact-list');
-        const newEmailList = newDoc.querySelector('.compact-list');
-        if (emailList && newEmailList) {
-          emailList.innerHTML = newEmailList.innerHTML;
+        // Update pending reviews section (separate from recent emails)
+        const pendingSection = document.querySelector('#pending-reviews-section');
+        const newPendingSection = newDoc.querySelector('#pending-reviews-section');
+        if (pendingSection && newPendingSection) {
+          pendingSection.innerHTML = newPendingSection.innerHTML;
+          console.log('[DASHBOARD] Pending reviews section updated');
         }
         
-        // Update pending reviews count
-        const pendingHeader = document.querySelector('.section-header h2');
-        const newPendingHeader = newDoc.querySelector('.section-header h2');
+        // Update recent emails section (separate from pending reviews)
+        const emailsSection = document.querySelector('#emails-section .compact-list');
+        const newEmailsSection = newDoc.querySelector('#emails-section .compact-list');
+        if (emailsSection && newEmailsSection) {
+          emailsSection.innerHTML = newEmailsSection.innerHTML;
+          console.log('[DASHBOARD] Recent emails section updated');
+        }
+        
+        // Update section headers with counts
+        const pendingHeader = document.querySelector('#pending-reviews-section .section-header h2');
+        const newPendingHeader = newDoc.querySelector('#pending-reviews-section .section-header h2');
         if (pendingHeader && newPendingHeader) {
           pendingHeader.textContent = newPendingHeader.textContent;
+        }
+        
+        const emailsHeader = document.querySelector('#emails-section .section-header h2');
+        const newEmailsHeader = newDoc.querySelector('#emails-section .section-header h2');
+        if (emailsHeader && newEmailsHeader) {
+          emailsHeader.textContent = newEmailsHeader.textContent;
         }
         
         // Reload globe if on Threat Intelligence tab
@@ -773,10 +788,10 @@
           window.location.reload(); // For now, full reload to get new threat data
         }
         
-        console.log('[DASHBOARD] ✅ Dashboard updated successfully!');
+        console.log('[DASHBOARD] Dashboard updated successfully!');
       })
       .catch(error => {
-        console.error('[DASHBOARD] ❌ Error updating dashboard:', error);
+        console.error('[DASHBOARD] Error updating dashboard:', error);
         // Fallback to reload if AJAX fails
         console.log('[DASHBOARD] Falling back to page reload...');
         window.location.reload();
@@ -968,7 +983,7 @@
           impersonated_brand: {{ (e.links[0].impersonated_brand if e.links else 'Email') | tojson }},
           campaign_id: {{ (e.links[0].campaign_id if e.links else '') | tojson }},
           country_code: {{ (e.sender_intel.country_code if e.sender_intel and e.sender_intel.country_code else 'XX') | tojson }},
-          country_flag: {{ (e.links[0].country_flag if e.links else '🌐') | tojson }},
+          country_flag: {{ (e.links[0].country_flag if e.links else '') | tojson }},
           hosting_ip: {{ (e.links[0].hosting_ip if e.links else None) | tojson }},
           sender_ip: {{ (e.sender_intel.sender_ip if e.sender_intel else None) | tojson }},
           redirect_count: {{ (e.links[0].redirect_count if e.links else 0) | tojson }},
@@ -1086,7 +1101,7 @@
             // Check email date
             const timeText = card.querySelector('.email-meta-item:last-child')?.textContent;
             if (timeText) {
-              // Extract date from "🕐 YYYY-MM-DD HH:MM" format
+              // Extract date from "YYYY-MM-DD HH:MM" format
               const dateMatch = timeText.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/);
               if (dateMatch) {
                 const emailDate = new Date(dateMatch[1]);
@@ -1117,6 +1132,22 @@
         }
       }
     });
+    
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Auto-hide flash messages after 10 seconds
+    setTimeout(function() {
+      const flashMessages = document.querySelector('.flash');
+      if (flashMessages) {
+        flashMessages.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        flashMessages.style.opacity = '0';
+        flashMessages.style.transform = 'translateY(-20px)';
+        setTimeout(function() {
+          flashMessages.style.display = 'none';
+        }, 500);
+      }
+    }, 10000);
   </script>
 
       </div> <!-- /container -->

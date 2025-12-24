@@ -554,6 +554,7 @@ section {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  text-decoration: none;
 }
 
 /* Primary button - pink → purple gradient */

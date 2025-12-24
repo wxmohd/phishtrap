@@ -55,9 +55,9 @@
               <td><strong>{{ user.email }}</strong></td>
               <td>
                 {% if user.provider == 'google' %}
-                  <span class="badge badge-google">📧 Gmail</span>
+                  <span class="badge badge-google">Gmail</span>
                 {% elif user.provider == 'microsoft' %}
-                  <span class="badge badge-microsoft">📨 Outlook</span>
+                  <span class="badge badge-microsoft">Outlook</span>
                 {% else %}
                   {{ user.provider }}
                 {% endif %}
@@ -65,9 +65,9 @@
               <td>{{ user.connected_at.strftime('%Y-%m-%d %H:%M') if user.connected_at else 'N/A' }}</td>
               <td>
                 {% if user.revoked_at %}
-                  <span class="badge badge-revoked">❌ Disconnected</span>
+                  <span class="badge badge-revoked">Disconnected</span>
                 {% else %}
-                  <span class="badge badge-active">✅ Active</span>
+                  <span class="badge badge-active">Active</span>
                 {% endif %}
               </td>
               <td>
@@ -75,7 +75,7 @@
                 <form method="post" action="{{ url_for('disconnect_user') }}" style="display: inline;" 
                       onsubmit="return confirm('Disconnect {{ user.email }}?\n\nThis will:\n- Remove the account\n- Delete all emails from this account\n- Delete personal blocklist entries\n\nThis cannot be undone!');">
                   <input type="hidden" name="email" value="{{ user.email }}">
-                  <button type="submit" class="btn btn-danger btn-small">🔌 Disconnect</button>
+                  <button type="submit" class="btn btn-danger btn-small">Disconnect</button>
                 </form>
                 {% else %}
                 <span class="muted">Already disconnected</span>

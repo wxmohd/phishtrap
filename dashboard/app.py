@@ -152,8 +152,8 @@ def create_app() -> Flask:
     @app.route("/logout")
     def logout():
         session.clear()
-        flash("Logged out.", "info")
-        return redirect(url_for("user_login"))
+        flash("Logged out successfully.", "info")
+        return redirect(url_for("admin_login"))
 
     # ---------------- Google OAuth flow -------------------------------------
     @app.route("/login/google")

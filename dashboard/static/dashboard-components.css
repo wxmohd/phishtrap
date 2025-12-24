@@ -71,6 +71,20 @@
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--border-subtle);
+  align-items: center;
+}
+
+.email-actions form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.email-actions .btn,
+.email-actions button.btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  height: auto;
+  min-height: 40px;
 }
 
 /* Review card (pending admin review) */

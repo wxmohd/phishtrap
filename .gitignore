@@ -1,0 +1,50 @@
+.env
+.env.*
+
+# Database (contains sensitive user data)
+database/*.db
+database/*.db-journal
+database/*.db-shm
+database/*.db-wal
+
+# OAuth credentials
+client_secret_*.json
+*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution
+build/
+dist/
+*.egg-info/
