@@ -470,16 +470,6 @@ COPY . .
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "dashboard.app:create_app()"]
 ```
 
-## Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ### Development Setup
 
 ```bash
@@ -494,8 +484,7 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run tests
-python3 test_classifier.py
+
 ```
 
 ## License
@@ -550,7 +539,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Known Issues
 
 - **SQLite Limitations**: Not suitable for high concurrency (use PostgreSQL in production)
-- **Heuristic Classifier**: ~70-80% accuracy (train ML model for better results)
 - **Token Refresh**: OAuth tokens expire after 1 hour (automatic refresh implemented but may need manual reconnect)
 - **Rate Limiting**: No rate limiting on API calls (may hit provider limits)
 - **Session Management**: Uses Flask sessions (needs Redis for multi-worker setups)
@@ -581,4 +569,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built for cybersecurity research by NCSC Bahrain**
+**Built for cybersecurity senior project in Bahrain Polytechnic**
