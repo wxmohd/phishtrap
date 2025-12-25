@@ -1,43 +1,41 @@
-# 🐟 PhishTrap
+# PhishTrap
 
 **AI-Powered Phishing Email Honeypot & Auto-Response System**
 
-PhishTrap is an advanced cybersecurity research platform that ingests suspicious emails from Gmail and Outlook, classifies them using AI, automatically responds to phishing attempts, and provides real-time threat intelligence analytics. Built for the National Cyber Security Bureau (NCSC) of Bahrain.
+PhishTrap is an advanced cybersecurity research platform that ingests suspicious emails from Gmail and Outlook, classifies them using AI, automatically responds to phishing attempts, and provides real-time threat intelligence analytics. Built for the National Cyber Security Centre (NCSC) of Bahrain.
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Flask](https://img.shields.io/badge/flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
 [![Flask-SocketIO](https://img.shields.io/badge/socketio-5.3+-orange.svg)](https://flask-socketio.readthedocs.io/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🚀 Features
+## Features
 
 ### Core Capabilities
-- **📧 Multi-Provider Email Ingestion**: Gmail API & Microsoft Graph API with OAuth 2.0
-- **🤖 AI Classification**: Heuristic-based phishing detection with confidence scoring (0-100%)
-- **🔄 Real-Time WebSocket Updates**: Live email notifications in dashboard without refresh
-- **🤝 Auto-Reply System**: Automated responses to high-confidence phishing (≥80%)
-- **🌍 Threat Intelligence**: IP geolocation, VirusTotal, URLhaus, PhishTank, AlienVault OTX
-- **👨‍💼 Admin Review Workflow**: Approve/reject/blocklist with decision tracking
-- **🔗 URL Analysis**: Extraction, deduplication, sandbox analysis, redirect tracking
-- **📊 Interactive Dashboard**: Real-time KPIs, 3D threat globe, email tables
-- **🔐 Security Controls**: Admin-only routes, data isolation, session management
-- **🗄️ SQLite Database**: Persistent storage with automatic schema migrations
+- **Multi-Provider Email Ingestion**: Gmail API & Microsoft Graph API with OAuth 2.0
+- **AI Classification**: Heuristic-based phishing detection with confidence scoring (0-100%)
+- **Real-Time WebSocket Updates**: Live email notifications in dashboard without refresh
+- **Auto-Reply System**: Automated responses to high-confidence phishing (≥80%)
+- **Threat Intelligence**: IP geolocation, VirusTotal, URLhaus, PhishTank, AlienVault OTX, AbuseIPDB
+- **Admin Review Workflow**: Approve/reject/blocklist with decision tracking
+- **URL Analysis**: Extraction, deduplication, sandbox analysis, redirect tracking
+- **Interactive Dashboard**: Real-time KPIs, 3D threat globe visualization, email tables
+- **Security Controls**: Admin-only routes, data isolation, session management
+- **SQLite Database**: Persistent storage with automatic schema migrations
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Quick Start](#-quick-start)
-- [Architecture](#-architecture)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Documentation](#-documentation)
-- [Testing](#-testing)
-- [Development](#-development)
-- [Deployment](#-deployment)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 # 1. Install dependencies
@@ -66,9 +64,7 @@ http://127.0.0.1:5000/admin/login
 # New emails appear with WebSocket notifications
 ```
 
-See [QUICKSTART.md](QUICKSTART.md) for detailed walkthrough.
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -150,9 +146,7 @@ See [QUICKSTART.md](QUICKSTART.md) for detailed walkthrough.
 - **database/models.py**: SQLAlchemy models (Email, Link, SenderIntelligence, ConnectedUser, Blocklist)
 - **database/migrations.py**: Schema evolution and column additions
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed diagrams.
-
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -177,7 +171,7 @@ pip install -r requirements.txt
 - `beautifulsoup4` - HTML parsing
 - `python-dotenv` - Environment variables
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -247,7 +241,7 @@ print(generate_password_hash("your-password"))
 8. Go to "Certificates & secrets" → "New client secret"
 9. Copy Application (client) ID and Client Secret to `.env`
 
-## 🎯 Usage
+## Usage
 
 ### Start PhishTrap
 
@@ -319,34 +313,8 @@ For emails in "Pending Admin Review":
 
 **No manual refresh needed!**
 
-## 📚 Documentation
+## Development
 
-- **[QUICKSTART.md](QUICKSTART.md)**: Get started in 5 minutes
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**: System design and diagrams
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)**: Technical details
-- **[TESTING_GUIDE.md](TESTING_GUIDE.md)**: Comprehensive testing instructions
-- **[SENDER_INTEL_GUIDE.md](SENDER_INTEL_GUIDE.md)**: Threat intelligence integration
-- **[sql_queries.sql](sql_queries.sql)**: Database inspection queries
-
-## 🧪 Testing
-
-### Run AI Classifier Tests
-
-```bash
-python3 test_classifier.py
-```
-
-### Run Database Queries
-
-```bash
-sqlite3 database/phishtrap.db < sql_queries.sql
-```
-
-### Manual Testing
-
-See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed test cases.
-
-## 🛠️ Development
 
 ### Project Structure
 
@@ -364,14 +332,22 @@ phishtrap/
 │   │   ├── dashboard.html         # Main dashboard (tabs, WebSocket)
 │   │   ├── sender_intel.html      # Threat intelligence view
 │   │   ├── ai_reply.html          # AI reply preview
+│   │   ├── login.html             # User login page
 │   │   ├── manage_users.html      # User management
 │   │   └── oauth_success.html     # OAuth callback success
 │   └── static/
-│       ├── style.css              # Modern dark theme
-│       └── threat-intel-globe.js  # 3D globe visualization
+│       ├── style-new.css          # Modern dark theme
+│       ├── animated-bg.css        # Background effects
+│       ├── dashboard-components.css # Component styles
+│       ├── sidebar.css            # Sidebar navigation
+│       ├── threat-intel-globe.css # Globe visualization styles
+│       ├── threat-intel-globe.js  # 3D globe visualization
+│       ├── three.min.js           # Three.js library
+│       ├── OrbitControls.js       # Three.js controls
+│       ├── logo.png               # Application logo
+│       └── favicon.png            # Browser favicon
 ├── database/
-│   ├── models.py                  # SQLAlchemy models (Email, Link, SenderIntelligence, etc.)
-│   ├── migrations.py              # Schema evolution
+│   ├── models.py                  # SQLAlchemy models
 │   └── phishtrap.db               # SQLite database (created at runtime)
 ├── services/
 │   ├── gmail_client.py            # Gmail API client
@@ -379,18 +355,28 @@ phishtrap/
 │   ├── gmail_pipeline.py          # Gmail email processing
 │   ├── outlook_pipeline.py        # Outlook email processing
 │   ├── ai_classifier.py           # Heuristic phishing detection
+│   ├── ml_classifier.py           # ML model loader
 │   ├── link_analyzer.py           # URL analysis & sandbox
 │   ├── sender_intel.py            # Threat intelligence (IP, WHOIS, APIs)
+│   ├── url_analyzer.py            # URL threat analysis
 │   ├── auto_responder.py          # Reply generation
 │   ├── background_sync.py         # 15-second sync loop
 │   ├── websocket_events.py        # Flask-SocketIO events
-│   ├── mailhog_client.py          # MailHog (demo only)
-│   └── pipeline.py                # MailHog pipeline (demo only)
+│   ├── blocklist.py               # Sender blocklist management
+│   ├── domain_whitelist.py        # Domain whitelist
+│   ├── reply_detector.py          # Email thread detection
+│   ├── admin_notifier.py          # Admin notifications
+│   ├── outlook_blocklist_sync.py  # Outlook blocklist sync
+│   ├── mailhog_client.py          # MailHog (testing only)
+│   ├── mailhog_responder.py       # MailHog responder (testing only)
+│   └── pipeline.py                # MailHog pipeline (testing only)
+├── inbox_reader/
+│   └── fetch_emails.py            # Email fetching utilities
 ├── utils/
 │   └── email_parser.py            # HTML/text parsing, URL extraction
-└── scripts/
-    ├── send_demo_emails.py        # Testing script
-    └── integrate_alienvault.py    # OTX integration
+├── data/
+│   └── GeoLite2-City.mmdb         # GeoIP database (61MB)
+└── phish_model.joblib             # ML model (23MB)
 ```
 
 ### Database Schema
@@ -448,7 +434,7 @@ blocklist (
 - Add docstrings to functions
 - Keep functions focused and small
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Checklist
 
@@ -484,7 +470,7 @@ COPY . .
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "dashboard.app:create_app()"]
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 
@@ -512,27 +498,27 @@ pip install -r requirements.txt
 python3 test_classifier.py
 ```
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- **MailHog**: Email testing tool
 - **Flask**: Web framework
 - **Authlib**: OAuth client
 - **SQLAlchemy**: ORM
+- **Three.js**: 3D visualization
 - **NCSC Bahrain**: Project sponsor
 
-## 📧 Contact
+## Contact
 
 - **Project Lead**: NCSC Bahrain
 - **Email**: admin@ncsc.gov.bh
 - **Website**: https://ncsc.gov.bh
 
-## 🗺️ Roadmap
+## Roadmap
 
-### Phase 1: Core (✅ Complete)
+### Phase 1: Core (Complete)
 - [x] Email ingestion from Gmail & Outlook (OAuth 2.0)
 - [x] Heuristic AI classification with confidence scoring
 - [x] Admin dashboard with real-time WebSocket updates
@@ -545,7 +531,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] 3D threat globe visualization
 - [x] Background sync (15-second interval)
 
-### Phase 2: Enhancement (📋 Planned)
+### Phase 2: Enhancement (Planned)
 - [ ] ML model training (replace heuristics)
 - [ ] Link clicking simulation with Selenium
 - [ ] Advanced analytics & reporting
@@ -553,7 +539,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Multi-language support
 - [ ] Export reports (PDF/Excel)
 
-### Phase 3: Scale (📋 Future)
+### Phase 3: Scale (Future)
 - [ ] PostgreSQL migration (production)
 - [ ] Multi-tenancy support
 - [ ] REST API
@@ -561,7 +547,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Real-time alerting (Slack, Teams, email)
 - [ ] Distributed deployment (Docker, Kubernetes)
 
-## 🐛 Known Issues
+## Known Issues
 
 - **SQLite Limitations**: Not suitable for high concurrency (use PostgreSQL in production)
 - **Heuristic Classifier**: ~70-80% accuracy (train ML model for better results)
@@ -571,7 +557,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **WebSocket Scaling**: Single-threaded (use Redis adapter for multiple workers)
 - **Threat Intel APIs**: Optional and may have rate limits (free tiers)
 
-## 💡 Tips
+## Tips
 
 ### Development
 - **Check logs**: Flask prints detailed logs to console
@@ -595,6 +581,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for cybersecurity research**
-
-🐟 Happy phishing hunting! 🎣
+**Built for cybersecurity research by NCSC Bahrain**
