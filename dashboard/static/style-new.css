@@ -282,14 +282,18 @@ body.login-page::before {
   font-weight: 500;
   font-size: 14px;
   background: rgba(15, 23, 42, 0.5);
+  text-decoration: none !important;
 }
 
-.topbar .link:hover {
+.topbar .link:hover,
+.topbar .link:focus,
+.topbar .link:active {
   border-color: var(--accent-pink);
   background: rgba(236, 72, 153, 0.1);
   color: var(--text-primary);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+  text-decoration: none !important;
 }
 
 /* ============================================
@@ -359,10 +363,9 @@ body.login-page::before {
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-bottom: 40px;
-  max-width: 100%;
+  margin-bottom: 24px;
   width: 100%;
   box-sizing: border-box;
   transition: gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -554,7 +557,13 @@ section {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  text-decoration: none;
+  text-decoration: none !important;
+}
+
+.btn:hover, .btn:focus, .btn:active,
+button[type="submit"]:hover, button[type="submit"]:focus, button[type="submit"]:active,
+.primary-btn:hover, .primary-btn:focus, .primary-btn:active {
+  text-decoration: none !important;
 }
 
 /* Primary button - pink → purple gradient */

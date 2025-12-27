@@ -6,12 +6,12 @@
 // Globe configuration
 const GLOBE_CONFIG = {
   radius: 100,
-  segments: 64,
+  segments: 48, // Reduced from 64 for better performance
   bahrain: { lat: 26.0667, lon: 50.5577 }, // Bahrain coordinates
   cameraDistance: 300,
   autoRotateSpeed: 0.3,
   arcHeight: 0.4,
-  arcSegments: 50,
+  arcSegments: 40, // Reduced from 50 for better performance
   maxThreats: 50,
   colors: {
     high: 0xef4444,    // Red
@@ -98,11 +98,12 @@ function initThreatGlobe(data) {
   try {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.15; // Higher = less slippery, more responsive
+    controls.dampingFactor = 0.25; // Higher = less slippery, more responsive
+    controls.rotateSpeed = 0.5; // Slower rotation for better control
     controls.minDistance = 120; // Closer zoom for tiny Bahrain!
     controls.maxDistance = 500;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = GLOBE_CONFIG.autoRotateSpeed;
+    controls.autoRotate = false; // Disabled auto-rotation
+    controls.autoRotateSpeed = 0;
     console.log('[GLOBE] OrbitControls initialized successfully');
   } catch (error) {
     console.error('[GLOBE] Failed to initialize OrbitControls:', error);
@@ -209,26 +210,14 @@ function createGridLines() {
   const gridMaterial = new THREE.LineBasicMaterial({
     color: 0x00ffff, // Cyan for cyber aesthetic
     transparent: true,
-    opacity: 0.08, // Very subtle
-    linewidth: 1
+    opacity: 0.03, // Very subtle, even when zoomed
+    linewidth: 0.3 // Much skinnier lines
   });
 
-  // Latitude lines
-  for (let lat = -80; lat <= 80; lat += 20) {
+  // Longitude lines only (vertical lines) - fewer lines for performance
+  for (let lon = 0; lon < 360; lon += 30) { // Changed from 20 to 30 degrees
     const points = [];
-    for (let lon = 0; lon <= 360; lon += 5) {
-      const pos = latLonToVector3(lat, lon, GLOBE_CONFIG.radius + 0.5);
-      points.push(pos);
-    }
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(geometry, gridMaterial);
-    globe.add(line);
-  }
-
-  // Longitude lines
-  for (let lon = 0; lon < 360; lon += 20) {
-    const points = [];
-    for (let lat = -90; lat <= 90; lat += 5) {
+    for (let lat = -90; lat <= 90; lat += 10) { // Changed from 5 to 10 degrees
       const pos = latLonToVector3(lat, lon, GLOBE_CONFIG.radius + 0.5);
       points.push(pos);
     }

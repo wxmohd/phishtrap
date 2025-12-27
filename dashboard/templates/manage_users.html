@@ -5,24 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Users - PhishTrap</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-new.css') }}?v=45">
+    <link rel="stylesheet" href="{{ url_for('static', filename='animated-bg.css') }}?v=36">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard-components.css') }}?v=36">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}?v=48">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg">
-  <header class="topbar">
-    <div class="brand">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo" style="height: 40px; vertical-align: middle; margin-right: 10px;">
-      PhishTrap
-    </div>
-    <nav>
-      <a class="link" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
-      <span class="admin">{{ admin_email }}</span>
-      <a class="link" href="{{ url_for('logout') }}">Logout</a>
-    </nav>
-  </header>
+  <div class="dashboard-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar collapsed" id="sidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="sidebar-logo" onclick="toggleSidebar()" title="Toggle sidebar">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="PhishTrap Logo">
+        </div>
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-name">PhishTrap</div>
+          <div class="sidebar-brand-subtitle">AI Sandbox</div>
+        </div>
+      </div>
 
-  <main class="container">
+      <!-- Navigation Items -->
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item" data-tooltip="Overview">
+          <span class="nav-icon"><i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Overview</span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item" data-tooltip="Emails">
+          <span class="nav-icon"><i data-lucide="mail" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Emails</span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item" data-tooltip="Threat Intelligence">
+          <span class="nav-icon"><i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Threat Intel</span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item" data-tooltip="Blocklist">
+          <span class="nav-icon"><i data-lucide="ban" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Blocklist</span>
+        </a>
+        <a href="{{ url_for('manage_users') }}" class="nav-item active" data-tooltip="Connected Users">
+          <span class="nav-icon"><i data-lucide="users" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Connected Users</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="sidebar-logout-btn" title="Logout" data-tooltip="Logout">
+          <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
+          <span class="logout-label">Logout</span>
+        </a>
+      </div>
+
+      <!-- Collapse Toggle -->
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+        <i data-lucide="chevron-left" class="toggle-icon"></i>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="main-topbar">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+          <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+        </button>
+        <h1 class="main-topbar-title">Connected Users</h1>
+        <div class="main-topbar-actions">
+        </div>
+      </div>
+
+      <div style="padding: 24px;">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash">
@@ -34,7 +89,7 @@
     {% endwith %}
 
     <section class="panel">
-      <h2>👥 Connected Users</h2>
+      <h2>Connected Users</h2>
       <p class="muted">Manage email accounts connected to PhishTrap</p>
 
       {% if users %}
@@ -88,7 +143,7 @@
       </div>
 
       <div style="margin-top: 2rem; padding: 1.5rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px;">
-        <h3 style="margin-top: 0; color: var(--text); font-size: 1.1rem;">📊 Summary</h3>
+        <h3 style="margin-top: 0; color: var(--text); font-size: 1.1rem;">Summary</h3>
         <ul style="margin: 0; padding-left: 1.5rem; color: var(--text); line-height: 1.8;">
           <li><strong style="color: var(--accent);">Total Connected:</strong> <span style="color: var(--ok);">{{ users|selectattr('revoked_at', 'none')|list|length }}</span></li>
           <li><strong style="color: var(--accent);">Total Disconnected:</strong> <span style="color: var(--muted);">{{ users|rejectattr('revoked_at', 'none')|list|length }}</span></li>
@@ -104,6 +159,37 @@
       </div>
       {% endif %}
     </section>
-  </main>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    // Mobile sidebar toggle
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+
+    // Restore sidebar state
+    window.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+      } else {
+        sidebar.classList.remove('collapsed');
+      }
+    });
+  </script>
 </body>
 </html>

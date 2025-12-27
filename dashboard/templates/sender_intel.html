@@ -84,7 +84,7 @@
         <!-- Sender Information -->
         {% if intel.latitude and intel.longitude %}
         <div class="panel">
-            <h2>🌍 Sender Location</h2>
+            <h2>Sender Location</h2>
             <div id="map"></div>
         </div>
         {% endif %}
@@ -93,7 +93,7 @@
         <div class="intel-grid">
             <!-- Geolocation -->
             <div class="intel-card">
-                <h3>📍 Geolocation</h3>
+                <h3>Geolocation</h3>
                 <div class="intel-item">
                     <span class="intel-label">Country:</span>
                     <span class="intel-value">{{ intel.country or 'Unknown' }}</span>
@@ -129,17 +129,17 @@
                 </div>
                 <div class="intel-item">
                     <span class="intel-label">VPN/Proxy:</span>
-                    <span class="intel-value">{{ 'Yes ⚠️' if intel.is_vpn or intel.is_proxy else 'No' }}</span>
+                    <span class="intel-value">{{ 'Yes (Warning)' if intel.is_vpn or intel.is_proxy else 'No' }}</span>
                 </div>
                 <div class="intel-item">
                     <span class="intel-label">Tor Network:</span>
-                    <span class="intel-value">{{ 'Yes 🚨' if intel.is_tor else 'No' }}</span>
+                    <span class="intel-value">{{ 'Yes (Alert)' if intel.is_tor else 'No' }}</span>
                 </div>
             </div>
 
             <!-- Domain Intelligence -->
             <div class="intel-card">
-                <h3>🌐 Domain Analysis</h3>
+                <h3>Domain Analysis</h3>
                 <div class="intel-item">
                     <span class="intel-label">Domain:</span>
                     <span class="intel-value">{{ intel.sender_domain or 'N/A' }}</span>
@@ -149,7 +149,7 @@
                     <span class="intel-value">
                         {% if intel.domain_age_days is not none %}
                             {{ intel.domain_age_days }} days
-                            {% if intel.domain_age_days < 30 %}⚠️{% endif %}
+                            {% if intel.domain_age_days < 30 %}(New){% endif %}
                         {% else %}
                             Unknown
                         {% endif %}
@@ -167,13 +167,13 @@
 
             <!-- Threat Intelligence -->
             <div class="intel-card">
-                <h3>🛡️ Threat Feeds</h3>
+                <h3>Threat Feeds</h3>
                 <div class="intel-item">
                     <span class="intel-label">VirusTotal:</span>
                     <span class="intel-value">
                         {% if intel.virustotal_detections is not none %}
                             {{ intel.virustotal_detections }} vendors flagged
-                            {% if intel.virustotal_detections > 0 %}🚨{% endif %}
+                            {% if intel.virustotal_detections > 0 %}(Alert){% endif %}
                         {% else %}
                             Not checked
                         {% endif %}
@@ -189,7 +189,7 @@
                     <span class="intel-label">URLhaus (Malware):</span>
                     <span class="intel-value">
                         {% if intel.urlhaus_listed %}
-                            🚨 MALWARE DETECTED
+                            MALWARE DETECTED
                         {% else %}
                             Clean
                         {% endif %}
@@ -199,7 +199,7 @@
                     <span class="intel-label">PhishTank:</span>
                     <span class="intel-value">
                         {% if intel.phishtank_listed %}
-                            🚨 PHISHING DETECTED
+                            PHISHING DETECTED
                         {% else %}
                             {% if 'PHISHTANK_API_KEY' in config %}
                                 Clean
@@ -215,7 +215,7 @@
                         {% if intel.alienvault_tags %}
                             {% set otx_tags = intel.alienvault_tags|from_json %}
                             {% if otx_tags %}
-                                🚨 {{ otx_tags|length }} threat pulse(s)
+                                {{ otx_tags|length }} threat pulse(s) detected
                             {% else %}
                                 Clean
                             {% endif %}
@@ -229,14 +229,14 @@
 
         {% else %}
         <div class="panel">
-            <p>⚠️ No sender intelligence data available for this email.</p>
+            <p>No sender intelligence data available for this email.</p>
             <p>Intelligence analysis may still be in progress or failed to complete.</p>
         </div>
         {% endif %}
 
         {% else %}
         <div class="panel">
-            <p>❌ Email not found.</p>
+            <p>Email not found.</p>
         </div>
         {% endif %}
     </div>

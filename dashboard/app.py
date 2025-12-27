@@ -471,11 +471,9 @@ def create_app() -> Flask:
             # Count users with active connection
             connected_users = len(active_user_emails)
             
-            # Get connected users for blocklist dropdown
+            # Get all users (including disconnected) for Connected Users tab
             users = s.execute(
-                select(ConnectedUser).where(
-                    ConnectedUser.revoked_at.is_(None)
-                )
+                select(ConnectedUser).order_by(ConnectedUser.connected_at.desc())
             ).scalars().all()
             
         # Calculate pagination info

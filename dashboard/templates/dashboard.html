@@ -51,6 +51,11 @@
           <span class="nav-icon"><i data-lucide="ban" style="width: 20px; height: 20px;"></i></span>
           <span class="nav-label">Blocklist</span>
         </a>
+        <a href="#" class="nav-item" data-tooltip="Connected Users" onclick="switchTab('users'); return false;">
+          <span class="nav-icon"><i data-lucide="users" style="width: 20px; height: 20px;"></i></span>
+          <span class="nav-label">Connected Users</span>
+          <span class="nav-badge">{{ connected_users }}</span>
+        </a>
       </nav>
 
       <!-- Sidebar Footer -->
@@ -103,14 +108,9 @@
       </div>
 
       <div class="card">
-        <div class="card-title">✓Replied</div>
+        <div class="card-title">Replied</div>
         <div class="kpi">{{ total_replied }}</div>
       </div>
-
-      <a href="{{ url_for('manage_users') }}" class="card card-clickable">
-        <div class="card-title">Connected Users</div>
-        <div class="kpi">{{ connected_users }}</div>
-      </a>
     </section>
 
     <!-- Pending Reviews Section -->
@@ -221,7 +221,7 @@
                 <span class="badge">{{ e.ai_score }}%</span>
               {% endif %}
               {% if e.replied %}
-                <span class="badge replied">✓ Replied</span>
+                <span class="badge replied">Replied</span>
               {% endif %}
             </div>
           </div>
@@ -308,7 +308,7 @@
             <div class="email-meta-item">{{ e.sender }}</div>
             <div class="email-meta-item">{{ e.received_at.strftime('%Y-%m-%d %H:%M') if e.received_at else '' }}</div>
             {% if e.replied %}
-            <div class="email-meta-item">✓ Replied</div>
+            <div class="email-meta-item">Replied</div>
             {% endif %}
           </div>
           <div class="email-actions">
@@ -392,13 +392,13 @@
         <div class="intel-panel">
           <div class="intel-panel-header">
             <h2 class="intel-panel-title">
-              <span>🧠</span> Threat Intelligence
+              Threat Intelligence
             </h2>
             <p class="intel-panel-subtitle">Click a threat arc to view details</p>
           </div>
           <div class="intel-panel-content">
             <div class="intel-empty-state">
-              <div class="intel-empty-icon">🎯</div>
+              <div class="intel-empty-icon"></div>
               <p class="intel-empty-text">
                 Select a threat on the globe to view<br>
                 detailed intelligence and analysis
@@ -412,7 +412,7 @@
       <div class="threat-intel-mobile-fallback">
         <section class="panel">
           <div class="section-header">
-            <h2>🧠 Threat Intelligence ({{ total_links }} threats)</h2>
+            <h2>Threat Intelligence ({{ total_links }} threats)</h2>
           </div>
           <div style="margin-top: 20px; overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; background: var(--bg-panel); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);">
@@ -492,13 +492,13 @@
               <!-- Intelligence Chips -->
               <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
                 {% if verdict.credential_harvest %}
-                  <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3);">🎣 Credential Harvest</span>
+                  <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3);">Credential Harvest</span>
                 {% endif %}
                 {% if verdict.downloads_file %}
-                  <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">📥 Downloads File</span>
+                  <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">Downloads File</span>
                 {% endif %}
                 {% if verdict.redirects_to_legit %}
-                  <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">✓ Redirects to Legit</span>
+                  <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">Redirects to Legit</span>
                 {% endif %}
               </div>
               
@@ -609,6 +609,82 @@
     </div>
     <!-- End Blocklist Tab -->
 
+    <!-- Tab Content: Connected Users -->
+    <div id="users-tab" class="tab-content" style="padding: 24px;">
+    <section class="panel">
+      <h2>Connected Users</h2>
+      <p class="muted">Manage email accounts connected to PhishTrap</p>
+
+      {% if users %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Provider</th>
+              <th>Connected</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td><strong>{{ user.email }}</strong></td>
+              <td>
+                {% if user.provider == 'google' %}
+                  <span class="badge badge-google">Gmail</span>
+                {% elif user.provider == 'microsoft' %}
+                  <span class="badge badge-microsoft">Outlook</span>
+                {% else %}
+                  {{ user.provider }}
+                {% endif %}
+              </td>
+              <td>{{ user.connected_at.strftime('%Y-%m-%d %H:%M') if user.connected_at else 'N/A' }}</td>
+              <td>
+                {% if user.revoked_at %}
+                  <span class="badge badge-revoked">Disconnected</span>
+                {% else %}
+                  <span class="badge badge-active">Active</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if not user.revoked_at %}
+                <form method="post" action="{{ url_for('disconnect_user') }}" style="display: inline;" 
+                      onsubmit="return confirm('Disconnect {{ user.email }}?\n\nThis will:\n- Remove the account\n- Delete all emails from this account\n- Delete personal blocklist entries\n\nThis cannot be undone!');">
+                  <input type="hidden" name="email" value="{{ user.email }}">
+                  <button type="submit" class="btn btn-danger btn-small">Disconnect</button>
+                </form>
+                {% else %}
+                <span class="muted">Already disconnected</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 8px;">
+        <h3 style="margin-top: 0; color: var(--text-primary); font-size: 1.1rem;">Summary</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-primary); line-height: 1.8;">
+          <li><strong style="color: var(--accent-pink);">Total Connected:</strong> <span style="color: var(--ok);">{{ users|selectattr('revoked_at', 'none')|list|length }}</span></li>
+          <li><strong style="color: var(--accent-pink);">Total Disconnected:</strong> <span style="color: var(--text-secondary);">{{ users|rejectattr('revoked_at', 'none')|list|length }}</span></li>
+        </ul>
+      </div>
+
+      {% else %}
+      <div style="text-align: center; padding: 3rem;">
+        <p style="font-size: 1.2rem; color: var(--text-secondary);">No users connected yet.</p>
+        <p>
+          <a href="{{ url_for('user_login') }}" class="btn">Connect an Account</a>
+        </p>
+      </div>
+      {% endif %}
+    </section>
+    </div>
+    <!-- End Connected Users Tab -->
+
   </main>
 
   <!-- WebSocket Client Library -->
@@ -623,10 +699,10 @@
         content.classList.remove('active');
       });
       
-      // Remove active class from all tab buttons
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      tabBtns.forEach(btn => {
-        btn.classList.remove('active');
+      // Remove active class from all nav items
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.classList.remove('active');
       });
       
       // Show selected tab content
@@ -635,15 +711,11 @@
         selectedTab.classList.add('active');
       }
       
-      // Add active class to clicked button
-      if (event && event.target) {
-        event.target.classList.add('active');
-      } else {
-        // If called programmatically, find and activate the button
-        const targetBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
-        if (targetBtn) {
-          targetBtn.classList.add('active');
-        }
+      // Add active class to the nav item that was clicked
+      // Find the nav item that triggers this tab
+      const targetNavItem = document.querySelector(`.nav-item[onclick*="switchTab('${tabName}')"]`);
+      if (targetNavItem) {
+        targetNavItem.classList.add('active');
       }
     }
     
